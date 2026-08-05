@@ -41,6 +41,11 @@
   --accent-2: #b8305f;
   --accent-soft: #fde3ec;
   --radius: 22px;
+  --ia-text-color: #000000;
+}
+
+:root[data-user="brunno"] {
+  --ia-text-color: #ffffff;
 }
 
 * {
