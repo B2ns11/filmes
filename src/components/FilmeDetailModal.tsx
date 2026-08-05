@@ -39,7 +39,7 @@ export default function FilmeDetailModal({
   async function salvarEdicoes() {
     setSalvando(true);
     try {
-      await api.atualizarFilme(filme.id, {
+      await api.atualizarFilme(filme!.id, {
         titulo,
         genero,
         plataforma,
@@ -59,7 +59,7 @@ export default function FilmeDetailModal({
     if (!confirm("Tem certeza que quer deletar?")) return;
     setDeletando(true);
     try {
-      await api.removerFilme(filme.id);
+      await api.removerFilme(filme!.id);
       onAtualizado();
       onClose();
     } finally {
