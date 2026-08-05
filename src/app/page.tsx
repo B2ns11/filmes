@@ -16,7 +16,7 @@ const CARTOES: CartaoUsuario[] = [
   {
     usuario: "brunno",
     nome: "Brunno",
-    gradiente: "linear-gradient(150deg, #0f1522, #1b4fc4)",
+    gradiente: "linear-gradient(150deg, #0f1522, #2d8659)",
     emoji: "🎥",
   },
   {
