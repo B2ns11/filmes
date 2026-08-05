@@ -55,10 +55,14 @@ export default function PhotoUpload({
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex flex-col gap-4">
+      {/* Preview grande estilo Apple */}
       <div
-        className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-app border border-border text-3xl"
-        style={{ background: "var(--accent-soft)" }}
+        className="mx-auto flex h-48 w-48 items-center justify-center overflow-hidden text-6xl shadow-lg"
+        style={{
+          background: "var(--accent-soft)",
+          borderRadius: "48px",
+        }}
       >
         {valor ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -68,35 +72,35 @@ export default function PhotoUpload({
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2">
+      {/* Botões */}
+      <div className="flex justify-center gap-2">
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="rounded-app border border-border px-4 py-2 text-sm hover:border-[var(--accent)]"
+          disabled={carregando}
+        >
+          {carregando ? "Carregando..." : "Trocar foto"}
+        </button>
+        {valor && (
           <button
             type="button"
-            onClick={() => inputRef.current?.click()}
-            className="rounded-app border border-border px-3 py-1.5 text-sm hover:border-[var(--accent)]"
-            disabled={carregando}
+            onClick={() => onChange(null)}
+            className="rounded-app px-4 py-2 text-sm text-muted hover:text-ink"
           >
-            {carregando ? "Carregando..." : "Trocar foto"}
+            Remover
           </button>
-          {valor && (
-            <button
-              type="button"
-              onClick={() => onChange(null)}
-              className="rounded-app px-3 py-1.5 text-sm text-muted hover:text-ink"
-            >
-              Remover
-            </button>
-          )}
-        </div>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => lidarComArquivo(e.target.files?.[0])}
-        />
-        {erro && <p className="text-xs text-red-500">{erro}</p>}
+        )}
       </div>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => lidarComArquivo(e.target.files?.[0])}
+      />
+      {erro && <p className="text-center text-xs text-red-500">{erro}</p>}
     </div>
   );
 }
