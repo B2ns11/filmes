@@ -22,6 +22,7 @@ export default function FilmeDetailModal({
   const [titulo, setTitulo] = useState("");
   const [genero, setGenero] = useState("");
   const [plataforma, setPlataforma] = useState("");
+  const [linkStreaming, setLinkStreaming] = useState("");
   const [categoria, setCategoria] = useState("");
   const [notaBrunno, setNotaBrunno] = useState("");
   const [notaPaloma, setNotaPaloma] = useState("");
@@ -33,6 +34,7 @@ export default function FilmeDetailModal({
       setTitulo(filme.titulo);
       setGenero(filme.genero);
       setPlataforma(filme.plataforma);
+      setLinkStreaming(filme.link_streaming || "");
       setCategoria(filme.categoria);
       setNotaBrunno(filme.nota_brunno?.toString() || "");
       setNotaPaloma(filme.nota_paloma?.toString() || "");
@@ -52,6 +54,7 @@ export default function FilmeDetailModal({
         titulo,
         genero,
         plataforma,
+        link_streaming: linkStreaming || undefined,
         categoria,
         nota_brunno: notaBrunno ? Number(notaBrunno) : null,
         nota_paloma: notaPaloma ? Number(notaPaloma) : null,
@@ -177,6 +180,17 @@ export default function FilmeDetailModal({
                   value={plataforma}
                   onChange={(e) => setPlataforma(e.target.value)}
                   className="mt-1 w-full rounded-app border border-border bg-surface-alt px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-muted">Link para assistir (URL)</label>
+                <input
+                  type="url"
+                  value={linkStreaming}
+                  onChange={(e) => setLinkStreaming(e.target.value)}
+                  className="mt-1 w-full rounded-app border border-border bg-surface-alt px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+                  placeholder="https://..."
                 />
               </div>
 
