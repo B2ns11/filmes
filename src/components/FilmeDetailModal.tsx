@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "./Modal";
 import { api } from "@/lib/api";
 import { type Filme, media, avaliacaoBadge } from "@/lib/types";
@@ -19,18 +19,26 @@ export default function FilmeDetailModal({
   onAtualizado,
 }: FilmeDetailModalProps) {
   const [editando, setEditando] = useState(false);
-  const [titulo, setTitulo] = useState(filme?.titulo || "");
-  const [genero, setGenero] = useState(filme?.genero || "");
-  const [plataforma, setPlataforma] = useState(filme?.plataforma || "");
-  const [categoria, setCategoria] = useState(filme?.categoria || "");
-  const [notaBrunno, setNotaBrunno] = useState(
-    filme?.nota_brunno?.toString() || ""
-  );
-  const [notaPaloma, setNotaPaloma] = useState(
-    filme?.nota_paloma?.toString() || ""
-  );
+  const [titulo, setTitulo] = useState("");
+  const [genero, setGenero] = useState("");
+  const [plataforma, setPlataforma] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [notaBrunno, setNotaBrunno] = useState("");
+  const [notaPaloma, setNotaPaloma] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [deletando, setDeletando] = useState(false);
+
+  useEffect(() => {
+    if (filme) {
+      setTitulo(filme.titulo);
+      setGenero(filme.genero);
+      setPlataforma(filme.plataforma);
+      setCategoria(filme.categoria);
+      setNotaBrunno(filme.nota_brunno?.toString() || "");
+      setNotaPaloma(filme.nota_paloma?.toString() || "");
+      setEditando(false);
+    }
+  }, [filme]);
 
   if (!filme || !aberto) return null;
 
@@ -113,15 +121,7 @@ export default function FilmeDetailModal({
 
             <div className="flex gap-2 pt-2">
               <button
-                onClick={() => {
-                  setEditando(true);
-                  setTitulo(filme.titulo);
-                  setGenero(filme.genero);
-                  setPlataforma(filme.plataforma);
-                  setCategoria(filme.categoria);
-                  setNotaBrunno(filme.nota_brunno?.toString() || "");
-                  setNotaPaloma(filme.nota_paloma?.toString() || "");
-                }}
+                onClick={() => setEditando(true)}
                 className="flex-1 rounded-app px-3 py-2 text-sm font-medium text-white"
                 style={{ background: "var(--accent)" }}
               >
