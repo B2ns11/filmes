@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
 import PhotoUpload from "@/components/PhotoUpload";
 import ChipsInput from "@/components/ChipsInput";
+import ConfiguracaoPerfil from "@/components/ConfiguracaoPerfil";
 import { useUsuario } from "@/lib/useUsuario";
 import { api } from "@/lib/api";
 import { GENEROS_SUGERIDOS, type Perfil } from "@/lib/types";
@@ -15,6 +16,7 @@ export default function PerfilPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [salvo, setSalvo] = useState(false);
+  const [abaAtiva, setAbaAtiva] = useState<"perfil" | "configuracoes">("perfil");
 
   useEffect(() => {
     if (!usuario) return;
@@ -53,11 +55,44 @@ export default function PerfilPage() {
         Isso ajuda a IA a entender melhor o que sugerir pra vocês dois.
       </p>
 
+      <div className="mb-6 flex gap-3 border-b border-border">
+        <button
+          onClick={() => setAbaAtiva("perfil")}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            abaAtiva === "perfil"
+              ? "border-b-2 text-[var(--accent)]"
+              : "text-muted hover:text-white"
+          }`}
+          style={
+            abaAtiva === "perfil"
+              ? { borderColor: "var(--accent)" }
+              : {}
+          }
+        >
+          Perfil
+        </button>
+        <button
+          onClick={() => setAbaAtiva("configuracoes")}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            abaAtiva === "configuracoes"
+              ? "border-b-2 text-[var(--accent)]"
+              : "text-muted hover:text-white"
+          }`}
+          style={
+            abaAtiva === "configuracoes"
+              ? { borderColor: "var(--accent)" }
+              : {}
+          }
+        >
+          Configurações
+        </button>
+      </div>
+
       {erro && <p className="mb-4 text-sm text-red-500">{erro}</p>}
 
       {carregando ? (
         <p className="text-sm text-muted">Carregando...</p>
-      ) : !perfil ? null : (
+      ) : !perfil ? null : abaAtiva === "perfil" ? (
         <div className="flex max-w-xl flex-col gap-6">
           <PhotoUpload
             valor={perfil.foto_base64}
@@ -115,6 +150,21 @@ export default function PerfilPage() {
             </button>
             {salvo && <span className="text-sm text-green-600">Salvo!</span>}
           </div>
+        </div>
+      ) : (
+        <div className="flex max-w-xl flex-col gap-6">
+          <ConfiguracaoPerfil
+            perfil={perfil}
+            onAtualizado={() => {
+              setAbaAtiva("perfil");
+              setTimeout(() => {
+                api
+                  .buscarPerfil(usuario || "brunno")
+                  .then(({ perfil }) => setPerfil(perfil))
+                  .catch(() => {});
+              }, 500);
+            }}
+          />
         </div>
       )}
     </AppShell>

@@ -90,10 +90,6 @@ export default function SelecionarUsuarioPage() {
           </button>
         ))}
       </div>
-
-      <p className="max-w-xs text-xs text-white/40">
-        Sem senha — é só clicar em cima do seu nome pra entrar.
-      </p>
     </div>
   );
 }

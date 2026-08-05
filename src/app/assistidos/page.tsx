@@ -8,8 +8,15 @@ import FilmeDetailModal from "@/components/FilmeDetailModal";
 import FiltrosGenero from "@/components/FiltrosGenero";
 import FiltroNota from "@/components/FiltroNota";
 import FiltroPlataforma from "@/components/FiltroPlataforma";
+import FiltroClasse from "@/components/FiltroClasse";
 import { api } from "@/lib/api";
-import { media, type Filme } from "@/lib/types";
+import { media, type Filme, type CriterioAvaliacao } from "@/lib/types";
+
+const CRITERIOS_PADRAO: CriterioAvaliacao[] = [
+  { label: "Vale cada segundo", emoji: "⏳", notaMinima: 8 },
+  { label: "Dá pro gasto", emoji: "😐", notaMinima: 5, notaMaxima: 7.99 },
+  { label: "Sai dessa!", emoji: "🚫", notaMinima: 0, notaMaxima: 4.99 },
+];
 
 export default function AssistidosPage() {
   const [filmes, setFilmes] = useState<Filme[]>([]);
@@ -20,7 +27,9 @@ export default function AssistidosPage() {
   const [generosEscolhidos, setGenerosEscolhidos] = useState<string[]>([]);
   const [notaMinima, setNotaMinima] = useState<number | null>(null);
   const [plataformasEscolhidas, setPlataformasEscolhidas] = useState<string[]>([]);
+  const [classesEscolhidas, setClassesEscolhidas] = useState<string[]>([]);
   const [filmeDetail, setFilmeDetail] = useState<Filme | null>(null);
+  const [criterios, setCriterios] = useState<CriterioAvaliacao[]>(CRITERIOS_PADRAO);
 
   async function carregar() {
     setCarregando(true);
@@ -36,7 +45,19 @@ export default function AssistidosPage() {
 
   useEffect(() => {
     carregar();
+    carregarCriterios();
   }, []);
+
+  async function carregarCriterios() {
+    try {
+      const data = await api.obterPerfil();
+      if (data.perfil?.criterios_avaliacao) {
+        setCriterios(data.perfil.criterios_avaliacao);
+      }
+    } catch (e) {
+      // usar critérios padrão
+    }
+  }
 
   const plataformas = useMemo(() => {
     const set = new Set<string>();
@@ -45,6 +66,21 @@ export default function AssistidosPage() {
     });
     return Array.from(set).sort();
   }, [filmes]);
+
+  function obterClasseFilme(filme: Filme): string | null {
+    const notaFilme = media(filme);
+    if (notaFilme === null) return null;
+
+    for (const criterio of criterios) {
+      const minOk = notaFilme >= criterio.notaMinima;
+      const maxOk =
+        criterio.notaMaxima === undefined || notaFilme <= criterio.notaMaxima;
+      if (minOk && maxOk) {
+        return criterio.label;
+      }
+    }
+    return null;
+  }
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -57,6 +93,14 @@ export default function AssistidosPage() {
         !f.plataforma.toLowerCase().includes(termo)
       ) {
         return false;
+      }
+
+      // Filtro por classe
+      if (classesEscolhidas.length > 0) {
+        const classeFilme = obterClasseFilme(f);
+        if (!classeFilme || !classesEscolhidas.includes(classeFilme)) {
+          return false;
+        }
       }
 
       // Filtro por gênero (múltiplos)
@@ -90,7 +134,7 @@ export default function AssistidosPage() {
     });
 
     return [...lista].sort((a, b) => (media(b) ?? -1) - (media(a) ?? -1));
-  }, [filmes, busca, generosEscolhidos, notaMinima, plataformasEscolhidas]);
+  }, [filmes, busca, generosEscolhidos, notaMinima, plataformasEscolhidas, classesEscolhidas, criterios]);
 
   async function remover(id: string) {
     if (!confirm("Remover este título da lista?")) return;
@@ -122,6 +166,11 @@ export default function AssistidosPage() {
       />
 
       <div className="mb-5 flex flex-col gap-3">
+        <FiltroClasse
+          criterios={criterios}
+          classesEscolhidas={classesEscolhidas}
+          onChange={setClassesEscolhidas}
+        />
         <FiltroPlataforma
           plataformas={plataformas}
           selecionadas={plataformasEscolhidas}
