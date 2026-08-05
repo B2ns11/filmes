@@ -5,6 +5,7 @@ import AppShell from "@/components/AppShell";
 import FilmeCard from "@/components/FilmeCard";
 import FilmeFormModal from "@/components/FilmeFormModal";
 import FilmeDetailModal from "@/components/FilmeDetailModal";
+import ModalLinkStreaming from "@/components/ModalLinkStreaming";
 import MarcarAssistidoForm from "@/components/MarcarAssistidoForm";
 import FiltrosGenero from "@/components/FiltrosGenero";
 import FiltroPlataforma from "@/components/FiltroPlataforma";
@@ -22,6 +23,8 @@ export default function AssistirPage() {
   const [generosEscolhidos, setGenerosEscolhidos] = useState<string[]>([]);
   const [plataformasEscolhidas, setPlataformasEscolhidas] = useState<string[]>([]);
   const [filmeDetail, setFilmeDetail] = useState<Filme | null>(null);
+  const [modalLinkAberto, setModalLinkAberto] = useState(false);
+  const [filmeEmAnalise, setFilmeEmAnalise] = useState<Filme | null>(null);
 
   async function carregar() {
     setCarregando(true);
@@ -91,8 +94,25 @@ export default function AssistirPage() {
   }
 
   async function aprovar(id: string) {
-    await api.atualizarFilme(id, { status: "para_assistir" });
-    setSugestoes((s) => s.filter((f) => f.id !== id));
+    const filme = sugestoes.find((f) => f.id === id);
+    if (filme) {
+      setFilmeEmAnalise(filme);
+      setModalLinkAberto(true);
+    }
+  }
+
+  async function confirmarComLink(link: string, plataforma: string) {
+    if (!filmeEmAnalise) return;
+
+    await api.atualizarFilme(filmeEmAnalise.id, {
+      status: "para_assistir",
+      link_streaming: link || undefined,
+      plataforma: plataforma || filmeEmAnalise.plataforma,
+    });
+
+    setModalLinkAberto(false);
+    setFilmeEmAnalise(null);
+    setSugestoes((s) => s.filter((f) => f.id !== filmeEmAnalise.id));
     carregar();
   }
 
@@ -250,6 +270,16 @@ export default function AssistirPage() {
         aberto={!!filmeDetail}
         onClose={() => setFilmeDetail(null)}
         onAtualizado={carregar}
+      />
+
+      <ModalLinkStreaming
+        aberto={modalLinkAberto}
+        titulo={filmeEmAnalise?.titulo || ""}
+        onConfirmar={confirmarComLink}
+        onCancelar={() => {
+          setModalLinkAberto(false);
+          setFilmeEmAnalise(null);
+        }}
       />
     </AppShell>
   );
