@@ -10,6 +10,7 @@ create table if not exists perfis (
   generos_favoritos text[] not null default '{}',
   generos_evitar text[] not null default '{}',
   preferencias_extra text not null default '',
+  criterios_avaliacao jsonb,
   atualizado_em timestamptz not null default now()
 );
 
@@ -19,6 +20,7 @@ create table if not exists filmes (
   categoria text not null default 'Filme',
   genero text not null default '',
   plataforma text not null default '',
+  link_streaming text,
   status text not null default 'para_assistir' check (status in ('assistido', 'para_assistir', 'sugestao_ia')),
   origem text not null default 'usuario' check (origem in ('usuario', 'ia', 'planilha')),
   indicado_por text check (indicado_por in ('brunno', 'paloma') or indicado_por is null),
