@@ -1,0 +1,65 @@
+[
+  {
+    "titulo": "Inacreditavel",
+    "categoria": "Minissérie",
+    "genero": "True crime",
+    "plataforma": "Netflix",
+    "indicado_por": "brunno",
+    "origem": "planilha",
+    "status": "para_assistir"
+  },
+  {
+    "titulo": "Proximo!",
+    "categoria": "Série",
+    "genero": "?",
+    "plataforma": "Netflix",
+    "indicado_por": "paloma",
+    "origem": "planilha",
+    "status": "para_assistir"
+  },
+  {
+    "titulo": "O sangue de Zeus",
+    "categoria": "Série",
+    "genero": "Ação",
+    "plataforma": "Netflix",
+    "indicado_por": "paloma",
+    "origem": "planilha",
+    "status": "para_assistir"
+  },
+  {
+    "titulo": "Paranoia",
+    "categoria": "Filmes",
+    "genero": "Misterio/suspense",
+    "plataforma": "Netflix",
+    "indicado_por": "brunno",
+    "origem": "planilha",
+    "status": "para_assistir"
+  },
+  {
+    "titulo": "Eric",
+    "categoria": "Minissérie",
+    "genero": "Misterio",
+    "plataforma": "Netflix",
+    "indicado_por": "brunno",
+    "origem": "planilha",
+    "status": "para_assistir"
+  },
+  {
+    "titulo": "Clickbait",
+    "categoria": "Minissérie",
+    "genero": "Misterio",
+    "plataforma": "Netflix",
+    "indicado_por": "brunno",
+    "origem": "planilha",
+    "status": "para_assistir"
+  },
+  {
+    "titulo": "Dançando para o diabo",
+    "categoria": "Documentario",
+    "genero": "Investigação",
+    "plataforma": "Netflix",
+    "indicado_por": "brunno",
+    "origem": "planilha",
+    "status": "para_assistir"
+  }
+]

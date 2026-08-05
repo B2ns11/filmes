@@ -1,0 +1,732 @@
+[
+  {
+    "titulo": "O Inocente",
+    "categoria": "Minissérie",
+    "genero": "Thriller",
+    "plataforma": "Netflix",
+    "nota_brunno": 9.0,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Perfil Falso",
+    "categoria": "Série",
+    "genero": "Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 4.0,
+    "nota_paloma": 3.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "The Circle Brasil",
+    "categoria": "Reality",
+    "genero": "Reality",
+    "plataforma": "Netflix",
+    "nota_brunno": 7.0,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Tudo bem no natal que vem",
+    "categoria": "Filme",
+    "genero": "Dramédia",
+    "plataforma": "Netflix",
+    "nota_brunno": 8.0,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Um de nós está mentido",
+    "categoria": "Série",
+    "genero": "Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 6.0,
+    "nota_paloma": 7.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Crepúsculo",
+    "categoria": "Série de filmes",
+    "genero": "Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 10.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "A Pequena Sereia",
+    "categoria": "Filme",
+    "genero": "Fantasia",
+    "plataforma": "Cinema",
+    "nota_brunno": 9.0,
+    "nota_paloma": 9.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Homem-Aranha: Sem Volta para Casa",
+    "categoria": "Filme",
+    "genero": "Ação/Aventura",
+    "plataforma": "Cinema",
+    "nota_brunno": 10.0,
+    "nota_paloma": 7.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Doutor Estranho no Multiverso da Loucura",
+    "categoria": "Filme",
+    "genero": "Ação/Aventura",
+    "plataforma": "Cinema",
+    "nota_brunno": 8.5,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Morbius",
+    "categoria": "Filme",
+    "genero": "Ação/Fantasia",
+    "plataforma": "Cinema",
+    "nota_brunno": 7.0,
+    "nota_paloma": 7.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Dungeons & Dragons: Honra Entre Rebeldes",
+    "categoria": "Filme",
+    "genero": "Ação/Aventura",
+    "plataforma": "Cinema",
+    "nota_brunno": 10.0,
+    "nota_paloma": 9.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Efeito Borboleta",
+    "categoria": "Filme",
+    "genero": "Ficção Científica/Drama",
+    "plataforma": "Prime video",
+    "nota_brunno": 10.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Wandinha",
+    "categoria": "Série",
+    "genero": "Comedia/Fantasia",
+    "plataforma": "Netflix",
+    "nota_brunno": 9.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Cidade Invisível",
+    "categoria": "Série",
+    "genero": "Drama/Fantasia",
+    "plataforma": "Netflix",
+    "nota_brunno": 8.0,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Bird Box",
+    "categoria": "Filme",
+    "genero": "Ficção Científica/Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 8.0,
+    "nota_paloma": 0.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Coracão Marcado",
+    "categoria": "Série",
+    "genero": "Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 7.0,
+    "nota_paloma": 6.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Venom",
+    "categoria": "Filme",
+    "genero": "Ação/Comedia",
+    "plataforma": "Cinema",
+    "nota_brunno": 10.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Corra",
+    "categoria": "Filme",
+    "genero": "Terror/Thriller",
+    "plataforma": "Netflix",
+    "nota_brunno": 8.0,
+    "nota_paloma": 6.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Um natal cheio de graça",
+    "categoria": "Filme",
+    "genero": "Comédia",
+    "plataforma": "Netflix",
+    "nota_brunno": 4.5,
+    "nota_paloma": 5.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "365 Dias",
+    "categoria": "Série de filmes",
+    "genero": "Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 5.0,
+    "nota_paloma": 6.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Pinóquio",
+    "categoria": "Filme",
+    "genero": "Aventura",
+    "plataforma": "Netflix",
+    "nota_brunno": 3.5,
+    "nota_paloma": 4.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Bad Boys",
+    "categoria": "Série de filmes",
+    "genero": "Ação/Comedia",
+    "plataforma": "",
+    "nota_brunno": 10.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Aquaman",
+    "categoria": "Filme",
+    "genero": "Ação/Aventura",
+    "plataforma": "",
+    "nota_brunno": 10.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Depature",
+    "categoria": "Série",
+    "genero": "Misterio",
+    "plataforma": "",
+    "nota_brunno": 4.0,
+    "nota_paloma": 3.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Noite a dentro",
+    "categoria": "Série",
+    "genero": "Thriller",
+    "plataforma": "Netflix",
+    "nota_brunno": 4.0,
+    "nota_paloma": 4.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Vizinhos",
+    "categoria": "Filme",
+    "genero": "Comedia",
+    "plataforma": "Netflix",
+    "nota_brunno": 8.0,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Acredite em mim",
+    "categoria": "Filme",
+    "genero": "Drama",
+    "plataforma": "Prime video",
+    "nota_brunno": 7.0,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Cruella",
+    "categoria": "Filme",
+    "genero": "Comedia/Fantasia",
+    "plataforma": "",
+    "nota_brunno": 10.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "A menina que matou os pais",
+    "categoria": "Série de filmes",
+    "genero": "Drama",
+    "plataforma": "Prime video",
+    "nota_brunno": 6.0,
+    "nota_paloma": 7.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Animais Fantásticos: Os Segredos de Dumbledore",
+    "categoria": "Filme",
+    "genero": "Ação/Fantasia",
+    "plataforma": "Cinema",
+    "nota_brunno": 10.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Lupin",
+    "categoria": "Série",
+    "genero": "Ação",
+    "plataforma": "Netflix",
+    "nota_brunno": 10.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "You",
+    "categoria": "Série",
+    "genero": "Drama/Comedia",
+    "plataforma": "Netflix",
+    "nota_brunno": 8.0,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Sex Education",
+    "categoria": "Série",
+    "genero": "Comedia",
+    "plataforma": "Netflix",
+    "nota_brunno": 9.0,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Chaves",
+    "categoria": "Série",
+    "genero": "Comedia",
+    "plataforma": "",
+    "nota_brunno": 10.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Todo mundo odeia o Chris",
+    "categoria": "Série",
+    "genero": "Comedia",
+    "plataforma": "",
+    "nota_brunno": 10.0,
+    "nota_paloma": 7.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Por trás de seus olhos",
+    "categoria": "Minissérie",
+    "genero": "Thriller/Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 8.0,
+    "nota_paloma": 7.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Fique Comigo",
+    "categoria": "Minissérie",
+    "genero": "Drama/Misterio",
+    "plataforma": "Netflix",
+    "nota_brunno": 6.0,
+    "nota_paloma": 6.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Segurança em jogo",
+    "categoria": "Minissérie",
+    "genero": "Drama/Misterio",
+    "plataforma": "Netflix",
+    "nota_brunno": 8.0,
+    "nota_paloma": 7.5,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Não fale com estranhos",
+    "categoria": "Minissérie",
+    "genero": "Drama/Misterio",
+    "plataforma": "Netflix",
+    "nota_brunno": 6.5,
+    "nota_paloma": 6.6,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Safe",
+    "categoria": "Minissérie",
+    "genero": "Drama/Misterio",
+    "plataforma": "Netflix",
+    "nota_brunno": 7.0,
+    "nota_paloma": 7.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Confie em mim",
+    "categoria": "Minissérie",
+    "genero": "Drama/Misterio",
+    "plataforma": "Netflix",
+    "nota_brunno": 4.0,
+    "nota_paloma": 6.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Respire!",
+    "categoria": "Minissérie",
+    "genero": "Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 3.0,
+    "nota_paloma": 2.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Quem Matou Sara?",
+    "categoria": "Série",
+    "genero": "Misterio",
+    "plataforma": "Netflix",
+    "nota_brunno": 6.0,
+    "nota_paloma": 6.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "A Queda da Casa de Usher",
+    "categoria": "Minissérie",
+    "genero": "Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 9.5,
+    "nota_paloma": 9.5,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "As ecolhas do amor",
+    "categoria": "Filme",
+    "genero": "Comédia romantica",
+    "plataforma": "Netflix",
+    "nota_brunno": 1.0,
+    "nota_paloma": 2.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Ilhados com a Sogra",
+    "categoria": "Reality show",
+    "genero": "Reality show",
+    "plataforma": "Netflix",
+    "nota_brunno": 5.0,
+    "nota_paloma": 5.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Uma familia quase perfeita",
+    "categoria": "Minissérie",
+    "genero": "Thriller",
+    "plataforma": "Netflix",
+    "nota_brunno": 7.0,
+    "nota_paloma": 7.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Bebe Rena",
+    "categoria": "Minissérie",
+    "genero": "Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 6.0,
+    "nota_paloma": 5.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "O caso Assunta",
+    "categoria": "Minissérie",
+    "genero": "Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 9.0,
+    "nota_paloma": 5.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "A Maldição da Mansão Bly",
+    "categoria": "Série",
+    "genero": "Terror/Thriller",
+    "plataforma": "Netflix",
+    "nota_brunno": 10.0,
+    "nota_paloma": 9.5,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Partiu América",
+    "categoria": "Filme",
+    "genero": "Comedia",
+    "plataforma": "Netflix",
+    "nota_brunno": 3.0,
+    "nota_paloma": 4.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Nimona",
+    "categoria": "Filme",
+    "genero": "Fantasia/Aventura",
+    "plataforma": "Netflix",
+    "nota_brunno": 10.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Corpos",
+    "categoria": "Minissérie",
+    "genero": "Thriller",
+    "plataforma": "Netflix",
+    "nota_brunno": 7.0,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Meu cunhado é um vampiro",
+    "categoria": "Filme",
+    "genero": "Comedia",
+    "plataforma": "Netflix",
+    "nota_brunno": 8.0,
+    "nota_paloma": 6.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Caleidoscopio",
+    "categoria": "Minissérie",
+    "genero": "Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 8.0,
+    "nota_paloma": 9.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Eu odeio o natal",
+    "categoria": "Série",
+    "genero": "Comédia romantica",
+    "plataforma": "Netflix",
+    "nota_brunno": 7.0,
+    "nota_paloma": 6.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Aquaman 2",
+    "categoria": "Filme",
+    "genero": "Ação/Fantasia",
+    "plataforma": "Cinema",
+    "nota_brunno": 9.0,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Bad boys 4",
+    "categoria": "Filme",
+    "genero": "Comedia/ ação",
+    "plataforma": "Cinema",
+    "nota_brunno": 10.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Cassandra",
+    "categoria": "Série",
+    "genero": "Thriller",
+    "plataforma": "Netflix",
+    "nota_brunno": 4.0,
+    "nota_paloma": 3.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "O Jardineiro",
+    "categoria": "Minissérie",
+    "genero": "Suspense",
+    "plataforma": "Netflix",
+    "nota_brunno": 3.0,
+    "nota_paloma": 4.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Que Falta Você me faz",
+    "categoria": "Minissérie",
+    "genero": "Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 4.0,
+    "nota_paloma": 4.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Depois da Cabana",
+    "categoria": "Minissérie",
+    "genero": "Suspense",
+    "plataforma": "Netflix",
+    "nota_brunno": 6.0,
+    "nota_paloma": 5.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Bem-Vindos a vizinhança",
+    "categoria": "Minissérie",
+    "genero": "Suspense",
+    "plataforma": "Netflix",
+    "nota_brunno": 6.0,
+    "nota_paloma": 6.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Adolecência",
+    "categoria": "Minissérie",
+    "genero": "Drama",
+    "plataforma": "Netflix",
+    "nota_brunno": 8.0,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Mufasa",
+    "categoria": "Filme",
+    "genero": "Aventura/Musica",
+    "plataforma": "Cinema",
+    "nota_brunno": 8.0,
+    "nota_paloma": 9.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Deapool & Wolverine",
+    "categoria": "Filme",
+    "genero": "Comedia/ ação",
+    "plataforma": "Cinema",
+    "nota_brunno": 10.0,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Algo horrível vai acontecer",
+    "categoria": "Minissérie",
+    "genero": "Terror/Thriller",
+    "plataforma": "Netflix",
+    "nota_brunno": null,
+    "nota_paloma": 9.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Michael",
+    "categoria": "Filme",
+    "genero": "Música/Drama Musical",
+    "plataforma": "Cinema",
+    "nota_brunno": null,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Ronaldinho Gaúcho",
+    "categoria": "Minissérie",
+    "genero": "Documentário",
+    "plataforma": "Netflix",
+    "nota_brunno": null,
+    "nota_paloma": 10.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Desobedientes",
+    "categoria": "Minissérie",
+    "genero": "Drama/Misterio",
+    "plataforma": "Netflix",
+    "nota_brunno": null,
+    "nota_paloma": 4.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Dele&Dela",
+    "categoria": "Minissérie",
+    "genero": "Drama/Fantasia",
+    "plataforma": "Netflix",
+    "nota_brunno": null,
+    "nota_paloma": 8.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Inside Man",
+    "categoria": "Minissérie",
+    "genero": "Thriller",
+    "plataforma": "Netflix",
+    "nota_brunno": null,
+    "nota_paloma": 9.0,
+    "origem": "planilha",
+    "status": "assistido"
+  },
+  {
+    "titulo": "Tremembe",
+    "categoria": "Série",
+    "genero": "Drama",
+    "plataforma": "Prime video",
+    "nota_brunno": null,
+    "nota_paloma": 7.0,
+    "origem": "planilha",
+    "status": "assistido"
+  }
+]

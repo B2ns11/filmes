@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --surface: #f4f5f7;
+  --surface-alt: #ffffff;
+  --card: #ffffff;
+  --border: #e2e4ea;
+  --ink: #1c1f26;
+  --muted: #6b7280;
+  --accent: #6d28d9;
+  --accent-2: #4c1d95;
+  --accent-soft: #ede9fe;
+  --radius: 16px;
+}
+
+/* Tema Brunno: tons de grafite / azul-petróleo, cantos mais retos */
+:root[data-user="brunno"] {
+  --surface: #10151f;
+  --surface-alt: #161c29;
+  --card: #1a2130;
+  --border: #2a3345;
+  --ink: #eef1f7;
+  --muted: #94a0b8;
+  --accent: #2f6fed;
+  --accent-2: #1b4fc4;
+  --accent-soft: #1c2b4d;
+  --radius: 10px;
+}
+
+/* Tema Paloma: tons de rosé / dourado suave, cantos mais arredondados */
+:root[data-user="paloma"] {
+  --surface: #fff6f8;
+  --surface-alt: #ffffff;
+  --card: #ffffff;
+  --border: #f3d9e2;
+  --ink: #402330;
+  --muted: #97768a;
+  --accent: #d6467e;
+  --accent-2: #b8305f;
+  --accent-soft: #fde3ec;
+  --radius: 22px;
+}
+
+* {
+  border-color: var(--border);
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  background: var(--surface);
+  color: var(--ink);
+  overscroll-behavior-y: none;
+}
+
+body {
+  min-height: 100dvh;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  touch-action: manipulation;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+/* iOS Safari abre teclado com zoom automático se a fonte do campo for
+   menor que 16px. Forçamos 16px nos campos (o texto visual continua
+   compacto porque o tamanho da caixa não muda). */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+/* Área segura do iPhone (notch e barra de gestos) */
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top), 0.75rem);
+}
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
+}
+.px-safe {
+  padding-left: max(env(safe-area-inset-left), 1rem);
+  padding-right: max(env(safe-area-inset-right), 1rem);
+}
+
+.scrollbar-fina::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.scrollbar-fina::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
