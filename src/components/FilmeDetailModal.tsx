@@ -42,12 +42,13 @@ export default function FilmeDetailModal({
 
   if (!filme || !aberto) return null;
 
-  const badge = avaliacaoBadge(media(filme));
+  const filmeAtual = filme;
+  const badge = avaliacaoBadge(media(filmeAtual));
 
   async function salvarEdicoes() {
     setSalvando(true);
     try {
-      await api.atualizarFilme(filme.id, {
+      await api.atualizarFilme(filmeAtual.id, {
         titulo,
         genero,
         plataforma,
@@ -67,7 +68,7 @@ export default function FilmeDetailModal({
     if (!confirm("Tem certeza que quer deletar?")) return;
     setDeletando(true);
     try {
-      await api.removerFilme(filme.id);
+      await api.removerFilme(filmeAtual.id);
       onAtualizado();
       onClose();
     } finally {
@@ -83,37 +84,37 @@ export default function FilmeDetailModal({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs text-muted">Categoria</p>
-                <p className="text-sm font-medium">{filme.categoria}</p>
+                <p className="text-sm font-medium">{filmeAtual.categoria}</p>
               </div>
               <div className="text-right">
                 <p className="text-xs text-muted">Avaliação média</p>
-                <p className="text-sm font-semibold">{badge.emoji} {media(filme) ?? "—"}</p>
+                <p className="text-sm font-semibold">{badge.emoji} {media(filmeAtual) ?? "—"}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-muted">Gênero</p>
-                <p className="text-sm font-medium">{filme.genero}</p>
+                <p className="text-sm font-medium">{filmeAtual.genero}</p>
               </div>
               <div>
                 <p className="text-xs text-muted">Plataforma</p>
-                <p className="text-sm font-medium">{filme.plataforma}</p>
+                <p className="text-sm font-medium">{filmeAtual.plataforma}</p>
               </div>
             </div>
 
-            {(filme.nota_brunno !== null || filme.nota_paloma !== null) && (
+            {(filmeAtual.nota_brunno !== null || filmeAtual.nota_paloma !== null) && (
               <div className="grid grid-cols-2 gap-4">
-                {filme.nota_brunno !== null && (
+                {filmeAtual.nota_brunno !== null && (
                   <div>
                     <p className="text-xs text-muted">Nota Brunno</p>
-                    <p className="text-sm font-medium">{filme.nota_brunno}</p>
+                    <p className="text-sm font-medium">{filmeAtual.nota_brunno}</p>
                   </div>
                 )}
-                {filme.nota_paloma !== null && (
+                {filmeAtual.nota_paloma !== null && (
                   <div>
                     <p className="text-xs text-muted">Nota Paloma</p>
-                    <p className="text-sm font-medium">{filme.nota_paloma}</p>
+                    <p className="text-sm font-medium">{filmeAtual.nota_paloma}</p>
                   </div>
                 )}
               </div>
