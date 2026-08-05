@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "./Modal";
 import { api } from "@/lib/api";
 import { type Filme, media, avaliacaoBadge } from "@/lib/types";
@@ -19,27 +19,36 @@ export default function FilmeDetailModal({
   onAtualizado,
 }: FilmeDetailModalProps) {
   const [editando, setEditando] = useState(false);
-  const [titulo, setTitulo] = useState(filme?.titulo || "");
-  const [genero, setGenero] = useState(filme?.genero || "");
-  const [plataforma, setPlataforma] = useState(filme?.plataforma || "");
-  const [categoria, setCategoria] = useState(filme?.categoria || "");
-  const [notaBrunno, setNotaBrunno] = useState(
-    filme?.nota_brunno?.toString() || ""
-  );
-  const [notaPaloma, setNotaPaloma] = useState(
-    filme?.nota_paloma?.toString() || ""
-  );
+  const [titulo, setTitulo] = useState("");
+  const [genero, setGenero] = useState("");
+  const [plataforma, setPlataforma] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [notaBrunno, setNotaBrunno] = useState("");
+  const [notaPaloma, setNotaPaloma] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [deletando, setDeletando] = useState(false);
 
+  useEffect(() => {
+    if (filme) {
+      setTitulo(filme.titulo);
+      setGenero(filme.genero);
+      setPlataforma(filme.plataforma);
+      setCategoria(filme.categoria);
+      setNotaBrunno(filme.nota_brunno?.toString() || "");
+      setNotaPaloma(filme.nota_paloma?.toString() || "");
+      setEditando(false);
+    }
+  }, [filme]);
+
   if (!filme || !aberto) return null;
 
-  const badge = avaliacaoBadge(media(filme));
+  const filmeAtual = filme;
+  const badge = avaliacaoBadge(media(filmeAtual));
 
   async function salvarEdicoes() {
     setSalvando(true);
     try {
-      await api.atualizarFilme(filme.id, {
+      await api.atualizarFilme(filmeAtual.id, {
         titulo,
         genero,
         plataforma,
@@ -59,7 +68,7 @@ export default function FilmeDetailModal({
     if (!confirm("Tem certeza que quer deletar?")) return;
     setDeletando(true);
     try {
-      await api.removerFilme(filme.id);
+      await api.removerFilme(filmeAtual.id);
       onAtualizado();
       onClose();
     } finally {
@@ -75,37 +84,37 @@ export default function FilmeDetailModal({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs text-muted">Categoria</p>
-                <p className="text-sm font-medium">{filme.categoria}</p>
+                <p className="text-sm font-medium">{filmeAtual.categoria}</p>
               </div>
               <div className="text-right">
                 <p className="text-xs text-muted">Avaliação média</p>
-                <p className="text-sm font-semibold">{badge.emoji} {media(filme) ?? "—"}</p>
+                <p className="text-sm font-semibold">{badge.emoji} {media(filmeAtual) ?? "—"}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-muted">Gênero</p>
-                <p className="text-sm font-medium">{filme.genero}</p>
+                <p className="text-sm font-medium">{filmeAtual.genero}</p>
               </div>
               <div>
                 <p className="text-xs text-muted">Plataforma</p>
-                <p className="text-sm font-medium">{filme.plataforma}</p>
+                <p className="text-sm font-medium">{filmeAtual.plataforma}</p>
               </div>
             </div>
 
-            {(filme.nota_brunno !== null || filme.nota_paloma !== null) && (
+            {(filmeAtual.nota_brunno !== null || filmeAtual.nota_paloma !== null) && (
               <div className="grid grid-cols-2 gap-4">
-                {filme.nota_brunno !== null && (
+                {filmeAtual.nota_brunno !== null && (
                   <div>
                     <p className="text-xs text-muted">Nota Brunno</p>
-                    <p className="text-sm font-medium">{filme.nota_brunno}</p>
+                    <p className="text-sm font-medium">{filmeAtual.nota_brunno}</p>
                   </div>
                 )}
-                {filme.nota_paloma !== null && (
+                {filmeAtual.nota_paloma !== null && (
                   <div>
                     <p className="text-xs text-muted">Nota Paloma</p>
-                    <p className="text-sm font-medium">{filme.nota_paloma}</p>
+                    <p className="text-sm font-medium">{filmeAtual.nota_paloma}</p>
                   </div>
                 )}
               </div>
@@ -113,15 +122,7 @@ export default function FilmeDetailModal({
 
             <div className="flex gap-2 pt-2">
               <button
-                onClick={() => {
-                  setEditando(true);
-                  setTitulo(filme.titulo);
-                  setGenero(filme.genero);
-                  setPlataforma(filme.plataforma);
-                  setCategoria(filme.categoria);
-                  setNotaBrunno(filme.nota_brunno?.toString() || "");
-                  setNotaPaloma(filme.nota_paloma?.toString() || "");
-                }}
+                onClick={() => setEditando(true)}
                 className="flex-1 rounded-app px-3 py-2 text-sm font-medium text-white"
                 style={{ background: "var(--accent)" }}
               >
