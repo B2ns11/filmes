@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import AppShell from "@/components/AppShell";
 import FilmeCard from "@/components/FilmeCard";
 import FilmeFormModal from "@/components/FilmeFormModal";
+import FilmeDetailModal from "@/components/FilmeDetailModal";
 import MarcarAssistidoForm from "@/components/MarcarAssistidoForm";
 import FiltrosGenero from "@/components/FiltrosGenero";
+import FiltroPlataforma from "@/components/FiltroPlataforma";
 import { api } from "@/lib/api";
 import type { Filme } from "@/lib/types";
 
@@ -18,6 +20,8 @@ export default function AssistirPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [avisoIA, setAvisoIA] = useState<string | null>(null);
   const [generosEscolhidos, setGenerosEscolhidos] = useState<string[]>([]);
+  const [plataformasEscolhidas, setPlataformasEscolhidas] = useState<string[]>([]);
+  const [filmeDetail, setFilmeDetail] = useState<Filme | null>(null);
 
   async function carregar() {
     setCarregando(true);
@@ -39,21 +43,38 @@ export default function AssistirPage() {
     carregar();
   }, []);
 
-  const paraAssistirFiltrados = useMemo(() => {
-    if (generosEscolhidos.length === 0) {
-      return paraAssistir;
-    }
-
-    return paraAssistir.filter((f) => {
-      const generos = f.genero
-        .split(",")
-        .map((g) => g.trim())
-        .map((g) => g.toLowerCase());
-      return generosEscolhidos.some((g) =>
-        generos.includes(g.toLowerCase())
-      );
+  const plataformas = useMemo(() => {
+    const set = new Set<string>();
+    paraAssistir.forEach((f) => {
+      if (f.plataforma) set.add(f.plataforma);
     });
-  }, [paraAssistir, generosEscolhidos]);
+    return Array.from(set).sort();
+  }, [paraAssistir]);
+
+  const paraAssistirFiltrados = useMemo(() => {
+    return paraAssistir.filter((f) => {
+      // Filtro por gênero
+      if (generosEscolhidos.length > 0) {
+        const generos = f.genero
+          .split(",")
+          .map((g) => g.trim())
+          .map((g) => g.toLowerCase());
+        const temGenero = generosEscolhidos.some((g) =>
+          generos.includes(g.toLowerCase())
+        );
+        if (!temGenero) return false;
+      }
+
+      // Filtro por plataforma
+      if (plataformasEscolhidas.length > 0) {
+        if (!plataformasEscolhidas.includes(f.plataforma)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [paraAssistir, generosEscolhidos, plataformasEscolhidas]);
 
   async function gerarSugestoes() {
     setGerando(true);
@@ -157,7 +178,12 @@ export default function AssistirPage() {
           </button>
         </div>
 
-        <div className="mb-5">
+        <div className="mb-5 flex flex-col gap-3">
+          <FiltroPlataforma
+            plataformas={plataformas}
+            selecionadas={plataformasEscolhidas}
+            onChange={setPlataformasEscolhidas}
+          />
           <FiltrosGenero
             generosEscolhidos={generosEscolhidos}
             onChange={setGenerosEscolhidos}
@@ -181,21 +207,33 @@ export default function AssistirPage() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {paraAssistirFiltrados.map((f) => (
-            <FilmeCard
+            <div
               key={f.id}
-              filme={f}
-              rodape={
-                <div className="flex items-center justify-between gap-2">
-                  <MarcarAssistidoForm filmeId={f.id} onConcluido={carregar} />
-                  <button
-                    onClick={() => remover(f.id)}
-                    className="-m-2 p-2 text-xs text-muted active:text-red-500"
-                  >
-                    Remover
-                  </button>
-                </div>
-              }
-            />
+              onClick={() => setFilmeDetail(f)}
+              className="cursor-pointer"
+            >
+              <FilmeCard
+                filme={f}
+                rodape={
+                  <div className="flex items-center justify-between gap-2">
+                    <MarcarAssistidoForm
+                      filmeId={f.id}
+                      onConcluido={carregar}
+                      plataformaAtual={f.plataforma}
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        remover(f.id);
+                      }}
+                      className="-m-2 p-2 text-xs text-muted active:text-red-500"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                }
+              />
+            </div>
           ))}
         </div>
       </section>
@@ -205,6 +243,13 @@ export default function AssistirPage() {
         onClose={() => setModalAberto(false)}
         onCriado={carregar}
         status="para_assistir"
+      />
+
+      <FilmeDetailModal
+        filme={filmeDetail}
+        aberto={!!filmeDetail}
+        onClose={() => setFilmeDetail(null)}
+        onAtualizado={carregar}
       />
     </AppShell>
   );

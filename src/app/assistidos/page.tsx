@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import AppShell from "@/components/AppShell";
 import FilmeCard from "@/components/FilmeCard";
 import FilmeFormModal from "@/components/FilmeFormModal";
+import FilmeDetailModal from "@/components/FilmeDetailModal";
 import FiltrosGenero from "@/components/FiltrosGenero";
 import FiltroNota from "@/components/FiltroNota";
+import FiltroPlataforma from "@/components/FiltroPlataforma";
 import { api } from "@/lib/api";
 import { media, type Filme } from "@/lib/types";
 
@@ -17,6 +19,8 @@ export default function AssistidosPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [generosEscolhidos, setGenerosEscolhidos] = useState<string[]>([]);
   const [notaMinima, setNotaMinima] = useState<number | null>(null);
+  const [plataformasEscolhidas, setPlataformasEscolhidas] = useState<string[]>([]);
+  const [filmeDetail, setFilmeDetail] = useState<Filme | null>(null);
 
   async function carregar() {
     setCarregando(true);
@@ -33,6 +37,14 @@ export default function AssistidosPage() {
   useEffect(() => {
     carregar();
   }, []);
+
+  const plataformas = useMemo(() => {
+    const set = new Set<string>();
+    filmes.forEach((f) => {
+      if (f.plataforma) set.add(f.plataforma);
+    });
+    return Array.from(set).sort();
+  }, [filmes]);
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -59,6 +71,13 @@ export default function AssistidosPage() {
         if (!temGenero) return false;
       }
 
+      // Filtro por plataforma
+      if (plataformasEscolhidas.length > 0) {
+        if (!plataformasEscolhidas.includes(f.plataforma)) {
+          return false;
+        }
+      }
+
       // Filtro por nota mínima
       if (notaMinima !== null) {
         const notaFilme = media(f);
@@ -71,7 +90,7 @@ export default function AssistidosPage() {
     });
 
     return [...lista].sort((a, b) => (media(b) ?? -1) - (media(a) ?? -1));
-  }, [filmes, busca, generosEscolhidos, notaMinima]);
+  }, [filmes, busca, generosEscolhidos, notaMinima, plataformasEscolhidas]);
 
   async function remover(id: string) {
     if (!confirm("Remover este título da lista?")) return;
@@ -103,6 +122,11 @@ export default function AssistidosPage() {
       />
 
       <div className="mb-5 flex flex-col gap-3">
+        <FiltroPlataforma
+          plataformas={plataformas}
+          selecionadas={plataformasEscolhidas}
+          onChange={setPlataformasEscolhidas}
+        />
         <FiltrosGenero
           generosEscolhidos={generosEscolhidos}
           onChange={setGenerosEscolhidos}
@@ -121,18 +145,26 @@ export default function AssistidosPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filtrados.map((f) => (
-          <FilmeCard
+          <div
             key={f.id}
-            filme={f}
-            rodape={
-              <button
-                onClick={() => remover(f.id)}
-                className="-m-2 self-start p-2 text-xs text-muted active:text-red-500"
-              >
-                Remover
-              </button>
-            }
-          />
+            onClick={() => setFilmeDetail(f)}
+            className="cursor-pointer"
+          >
+            <FilmeCard
+              filme={f}
+              rodape={
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    remover(f.id);
+                  }}
+                  className="-m-2 self-start p-2 text-xs text-muted active:text-red-500"
+                >
+                  Remover
+                </button>
+              }
+            />
+          </div>
         ))}
       </div>
 
@@ -141,6 +173,13 @@ export default function AssistidosPage() {
         onClose={() => setModalAberto(false)}
         onCriado={carregar}
         status="assistido"
+      />
+
+      <FilmeDetailModal
+        filme={filmeDetail}
+        aberto={!!filmeDetail}
+        onClose={() => setFilmeDetail(null)}
+        onAtualizado={carregar}
       />
     </AppShell>
   );
