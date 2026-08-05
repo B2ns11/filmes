@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppShell from "@/components/AppShell";
 import FilmeCard from "@/components/FilmeCard";
 import FilmeFormModal from "@/components/FilmeFormModal";
 import MarcarAssistidoForm from "@/components/MarcarAssistidoForm";
+import FiltrosGenero from "@/components/FiltrosGenero";
 import { api } from "@/lib/api";
 import type { Filme } from "@/lib/types";
 
@@ -16,6 +17,7 @@ export default function AssistirPage() {
   const [gerando, setGerando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [avisoIA, setAvisoIA] = useState<string | null>(null);
+  const [generosEscolhidos, setGenerosEscolhidos] = useState<string[]>([]);
 
   async function carregar() {
     setCarregando(true);
@@ -36,6 +38,22 @@ export default function AssistirPage() {
   useEffect(() => {
     carregar();
   }, []);
+
+  const paraAssistirFiltrados = useMemo(() => {
+    if (generosEscolhidos.length === 0) {
+      return paraAssistir;
+    }
+
+    return paraAssistir.filter((f) => {
+      const generos = f.genero
+        .split(",")
+        .map((g) => g.trim())
+        .map((g) => g.toLowerCase());
+      return generosEscolhidos.some((g) =>
+        generos.includes(g.toLowerCase())
+      );
+    });
+  }, [paraAssistir, generosEscolhidos]);
 
   async function gerarSugestoes() {
     setGerando(true);
@@ -139,6 +157,13 @@ export default function AssistirPage() {
           </button>
         </div>
 
+        <div className="mb-5">
+          <FiltrosGenero
+            generosEscolhidos={generosEscolhidos}
+            onChange={setGenerosEscolhidos}
+          />
+        </div>
+
         {erro && <p className="mb-4 text-sm text-red-500">{erro}</p>}
         {carregando && <p className="text-sm text-muted">Carregando...</p>}
 
@@ -148,8 +173,14 @@ export default function AssistirPage() {
           </p>
         )}
 
+        {!carregando && paraAssistir.length > 0 && paraAssistirFiltrados.length === 0 && (
+          <p className="rounded-app border border-dashed border-border p-8 text-center text-sm text-muted">
+            Nenhum título corresponde ao filtro de gênero selecionado.
+          </p>
+        )}
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {paraAssistir.map((f) => (
+          {paraAssistirFiltrados.map((f) => (
             <FilmeCard
               key={f.id}
               filme={f}

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import AppShell from "@/components/AppShell";
 import FilmeCard from "@/components/FilmeCard";
 import FilmeFormModal from "@/components/FilmeFormModal";
+import FiltrosGenero from "@/components/FiltrosGenero";
+import FiltroNota from "@/components/FiltroNota";
 import { api } from "@/lib/api";
 import { media, type Filme } from "@/lib/types";
 
@@ -13,6 +15,8 @@ export default function AssistidosPage() {
   const [busca, setBusca] = useState("");
   const [modalAberto, setModalAberto] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [generosEscolhidos, setGenerosEscolhidos] = useState<string[]>([]);
+  const [notaMinima, setNotaMinima] = useState<number | null>(null);
 
   async function carregar() {
     setCarregando(true);
@@ -32,16 +36,42 @@ export default function AssistidosPage() {
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();
-    const lista = termo
-      ? filmes.filter(
-          (f) =>
-            f.titulo.toLowerCase().includes(termo) ||
-            f.genero.toLowerCase().includes(termo) ||
-            f.plataforma.toLowerCase().includes(termo)
-        )
-      : filmes;
+    const lista = filmes.filter((f) => {
+      // Filtro de busca por texto
+      if (
+        termo &&
+        !f.titulo.toLowerCase().includes(termo) &&
+        !f.genero.toLowerCase().includes(termo) &&
+        !f.plataforma.toLowerCase().includes(termo)
+      ) {
+        return false;
+      }
+
+      // Filtro por gênero (múltiplos)
+      if (generosEscolhidos.length > 0) {
+        const generos = f.genero
+          .split(",")
+          .map((g) => g.trim())
+          .map((g) => g.toLowerCase());
+        const temGenero = generosEscolhidos.some((g) =>
+          generos.includes(g.toLowerCase())
+        );
+        if (!temGenero) return false;
+      }
+
+      // Filtro por nota mínima
+      if (notaMinima !== null) {
+        const notaFilme = media(f);
+        if (notaFilme === null || notaFilme < notaMinima) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
     return [...lista].sort((a, b) => (media(b) ?? -1) - (media(a) ?? -1));
-  }, [filmes, busca]);
+  }, [filmes, busca, generosEscolhidos, notaMinima]);
 
   async function remover(id: string) {
     if (!confirm("Remover este título da lista?")) return;
@@ -71,6 +101,14 @@ export default function AssistidosPage() {
         placeholder="Buscar por título, gênero ou plataforma..."
         className="mb-5 w-full rounded-app border border-border bg-surface-alt px-4 py-2.5 text-sm outline-none focus:border-[var(--accent)]"
       />
+
+      <div className="mb-5 flex flex-col gap-3">
+        <FiltrosGenero
+          generosEscolhidos={generosEscolhidos}
+          onChange={setGenerosEscolhidos}
+        />
+        <FiltroNota notaMinima={notaMinima} onChange={setNotaMinima} />
+      </div>
 
       {erro && <p className="mb-4 text-sm text-red-500">{erro}</p>}
       {carregando && <p className="text-sm text-muted">Carregando...</p>}
