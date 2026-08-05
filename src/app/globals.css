@@ -15,17 +15,17 @@
   --radius: 16px;
 }
 
-/* Tema Brunno: tons de grafite / azul-petróleo, cantos mais retos */
+/* Tema Brunno: tons de grafite / verde, cantos mais retos */
 :root[data-user="brunno"] {
   --surface: #10151f;
   --surface-alt: #161c29;
   --card: #1a2130;
   --border: #2a3345;
-  --ink: #eef1f7;
+  --ink: #ffffff;
   --muted: #94a0b8;
-  --accent: #2f6fed;
-  --accent-2: #1b4fc4;
-  --accent-soft: #1c2b4d;
+  --accent: #22c55e;
+  --accent-2: #16a34a;
+  --accent-soft: #1c3a2e;
   --radius: 10px;
 }
 

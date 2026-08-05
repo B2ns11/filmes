@@ -48,7 +48,7 @@ export default function FilmeCard({
       {filme.origem === "ia" && filme.motivo_ia && (
         <p
           className="rounded-app px-3 py-2 text-xs leading-relaxed"
-          style={{ background: "var(--accent-soft)", color: "var(--accent-2)" }}
+          style={{ background: "var(--accent-soft)", color: "#ffffff" }}
         >
           ✨ {filme.motivo_ia}
         </p>
