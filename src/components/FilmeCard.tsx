@@ -1,6 +1,7 @@
 import type { Filme } from "@/lib/types";
 import { media } from "@/lib/types";
 import AvaliacaoBadge from "./AvaliacaoBadge";
+import BotaoAssistir from "./BotaoAssistir";
 
 export default function FilmeCard({
   filme,
@@ -51,6 +52,10 @@ export default function FilmeCard({
         >
           ✨ {filme.motivo_ia}
         </p>
+      )}
+
+      {filme.link_streaming && (
+        <BotaoAssistir linkStreaming={filme.link_streaming} tamanho="pequeno" />
       )}
 
       {rodape}

@@ -6,7 +6,6 @@ import FilmeCard from "@/components/FilmeCard";
 import FilmeFormModal from "@/components/FilmeFormModal";
 import FilmeDetailModal from "@/components/FilmeDetailModal";
 import FiltrosGenero from "@/components/FiltrosGenero";
-import FiltroNota from "@/components/FiltroNota";
 import FiltroPlataforma from "@/components/FiltroPlataforma";
 import FiltroClasse from "@/components/FiltroClasse";
 import { api } from "@/lib/api";
@@ -25,7 +24,6 @@ export default function AssistidosPage() {
   const [modalAberto, setModalAberto] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [generosEscolhidos, setGenerosEscolhidos] = useState<string[]>([]);
-  const [notaMinima, setNotaMinima] = useState<number | null>(null);
   const [plataformasEscolhidas, setPlataformasEscolhidas] = useState<string[]>([]);
   const [classesEscolhidas, setClassesEscolhidas] = useState<string[]>([]);
   const [filmeDetail, setFilmeDetail] = useState<Filme | null>(null);
@@ -122,19 +120,11 @@ export default function AssistidosPage() {
         }
       }
 
-      // Filtro por nota mínima
-      if (notaMinima !== null) {
-        const notaFilme = media(f);
-        if (notaFilme === null || notaFilme < notaMinima) {
-          return false;
-        }
-      }
-
       return true;
     });
 
     return [...lista].sort((a, b) => (media(b) ?? -1) - (media(a) ?? -1));
-  }, [filmes, busca, generosEscolhidos, notaMinima, plataformasEscolhidas, classesEscolhidas, criterios]);
+  }, [filmes, busca, generosEscolhidos, plataformasEscolhidas, classesEscolhidas, criterios]);
 
   async function remover(id: string) {
     if (!confirm("Remover este título da lista?")) return;
@@ -180,7 +170,6 @@ export default function AssistidosPage() {
           generosEscolhidos={generosEscolhidos}
           onChange={setGenerosEscolhidos}
         />
-        <FiltroNota notaMinima={notaMinima} onChange={setNotaMinima} />
       </div>
 
       {erro && <p className="mb-4 text-sm text-red-500">{erro}</p>}

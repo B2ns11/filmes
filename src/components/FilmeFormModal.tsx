@@ -22,6 +22,7 @@ export default function FilmeFormModal({
   const [categoria, setCategoria] = useState("Filme");
   const [genero, setGenero] = useState("");
   const [plataforma, setPlataforma] = useState("");
+  const [linkStreaming, setLinkStreaming] = useState("");
   const [notaBrunno, setNotaBrunno] = useState("");
   const [notaPaloma, setNotaPaloma] = useState("");
   const [indicadoPor, setIndicadoPor] = useState<Usuario | "">("");
@@ -33,6 +34,7 @@ export default function FilmeFormModal({
     setCategoria("Filme");
     setGenero("");
     setPlataforma("");
+    setLinkStreaming("");
     setNotaBrunno("");
     setNotaPaloma("");
     setIndicadoPor("");
@@ -53,6 +55,7 @@ export default function FilmeFormModal({
         categoria,
         genero,
         plataforma,
+        link_streaming: linkStreaming || undefined,
         status,
         origem: "usuario",
         indicado_por: status === "para_assistir" ? indicadoPor || null : null,
@@ -115,15 +118,27 @@ export default function FilmeFormModal({
           </label>
         </div>
 
-        <label className="flex flex-col gap-1 text-sm">
-          Plataforma
-          <input
-            value={plataforma}
-            onChange={(e) => setPlataforma(e.target.value)}
-            className="rounded-app border border-border bg-surface-alt px-3 py-2 outline-none focus:border-[var(--accent)]"
-            placeholder="Netflix, Cinema, Prime Video..."
-          />
-        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1 text-sm">
+            Plataforma
+            <input
+              value={plataforma}
+              onChange={(e) => setPlataforma(e.target.value)}
+              className="rounded-app border border-border bg-surface-alt px-3 py-2 outline-none focus:border-[var(--accent)]"
+              placeholder="Netflix, Cinema, Prime Video..."
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            Link para assistir (URL)
+            <input
+              type="url"
+              value={linkStreaming}
+              onChange={(e) => setLinkStreaming(e.target.value)}
+              className="rounded-app border border-border bg-surface-alt px-3 py-2 outline-none focus:border-[var(--accent)]"
+              placeholder="https://..."
+            />
+          </label>
+        </div>
 
         {status === "assistido" ? (
           <div className="grid grid-cols-2 gap-3">

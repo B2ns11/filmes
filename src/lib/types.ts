@@ -9,6 +9,7 @@ export interface Filme {
   categoria: string;
   genero: string;
   plataforma: string;
+  link_streaming?: string;
   status: StatusFilme;
   origem: OrigemFilme;
   indicado_por: Usuario | null;
