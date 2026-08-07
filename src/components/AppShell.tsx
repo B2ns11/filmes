@@ -9,7 +9,6 @@ import { NOME_USUARIO } from "@/lib/types";
 const LINKS = [
   { href: "/assistidos", label: "Assistidos", icon: "🎬" },
   { href: "/assistir", label: "Assistir", icon: "🍿" },
-  { href: "/projetos", label: "Projetos", icon: "📁" },
   { href: "/perfil", label: "Perfil", icon: "🙂" },
 ];
 
