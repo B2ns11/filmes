@@ -22,6 +22,8 @@ export default function ProjetoPage() {
   const [carregando, setCarregando] = useState(true);
   const [aba, setAba] = useState<"assistidos" | "para_assistir">("assistidos");
   const [modalAberto, setModalAberto] = useState(false);
+  const [filmeEditando, setFilmeEditando] = useState<Filme | null>(null);
+  const [deletando, setDeletando] = useState<string | null>(null);
 
   const temaCfg = projeto?.tema ? TEMAS[projeto.tema] : null;
 
@@ -45,6 +47,31 @@ export default function ProjetoPage() {
     } finally {
       setCarregando(false);
     }
+  }
+
+  async function deletarFilme(filmeId: string) {
+    if (!confirm("Tem certeza que quer deletar?")) return;
+    setDeletando(filmeId);
+    try {
+      const res = await fetch(`/api/filmes/${filmeId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Erro ao deletar");
+      carregar();
+    } catch (e) {
+      alert("Erro ao deletar filme");
+      console.error(e);
+    } finally {
+      setDeletando(null);
+    }
+  }
+
+  function abrirEdicao(filme: Filme) {
+    setFilmeEditando(filme);
+    setModalAberto(true);
+  }
+
+  function fecharModal() {
+    setModalAberto(false);
+    setFilmeEditando(null);
   }
 
   const stats = useMemo(() => {
@@ -227,18 +254,38 @@ export default function ProjetoPage() {
                 ) : (
                   <div className="text-xs text-muted italic text-center py-3">Sem avaliações</div>
                 )}
+
+                {/* Botões de Editar e Deletar - só aparece em "Para Assistir" */}
+                {aba === "para_assistir" && (
+                  <div className="mt-4 flex gap-2 border-t border-border/30 pt-3">
+                    <button
+                      onClick={() => abrirEdicao(f)}
+                      className="flex-1 rounded-lg px-2 py-2 text-xs font-medium transition-colors hover:bg-[var(--accent)]/20 hover:text-[var(--accent)]"
+                    >
+                      ✏️ Editar
+                    </button>
+                    <button
+                      onClick={() => deletarFilme(f.id)}
+                      disabled={deletando === f.id}
+                      className="flex-1 rounded-lg px-2 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+                    >
+                      {deletando === f.id ? "Deletando..." : "🗑️ Deletar"}
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Modal Adicionar Filme */}
+      {/* Modal Adicionar/Editar Filme */}
       {typeof id === "string" && (
         <AdicionarFilmeProjetoModal
           projetoId={id}
           aberto={modalAberto}
-          onFechar={() => setModalAberto(false)}
+          filmeEditando={filmeEditando}
+          onFechar={fecharModal}
           onAdicionado={carregar}
         />
       )}

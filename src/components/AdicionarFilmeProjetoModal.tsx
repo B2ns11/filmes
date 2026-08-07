@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { Filme } from "@/lib/types";
 
 interface AdicionarFilmeProjetoModalProps {
   projetoId: string;
   aberto: boolean;
+  filmeEditando?: Filme | null;
   onFechar: () => void;
   onAdicionado: () => void;
 }
@@ -12,9 +14,23 @@ interface AdicionarFilmeProjetoModalProps {
 export default function AdicionarFilmeProjetoModal({
   projetoId,
   aberto,
+  filmeEditando,
   onFechar,
   onAdicionado,
 }: AdicionarFilmeProjetoModalProps) {
+  useEffect(() => {
+    if (filmeEditando) {
+      setTitulo(filmeEditando.titulo);
+      setGenero(filmeEditando.genero || "");
+      setAno(filmeEditando.ano?.toString() || "");
+      setSinopse(filmeEditando.sinopse || "");
+      setPlataforma(filmeEditando.plataforma || "");
+      setLinkStreaming(filmeEditando.link_streaming || "");
+      setBannerPreview(filmeEditando.banner_url || "");
+    } else if (!aberto) {
+      resetForm();
+    }
+  }, [filmeEditando, aberto]);
   const [titulo, setTitulo] = useState("");
   const [genero, setGenero] = useState("");
   const [ano, setAno] = useState("");
@@ -54,27 +70,41 @@ export default function AdicionarFilmeProjetoModal({
     if (!titulo.trim()) return;
     setSalvando(true);
     try {
-      const res = await fetch("/api/filmes", {
-        method: "POST",
-        body: JSON.stringify({
-          titulo: titulo.trim(),
-          genero: genero.trim(),
-          ano: ano ? parseInt(ano) : null,
-          sinopse: sinopse.trim(),
-          plataforma: plataforma.trim(),
-          link_streaming: linkStreaming.trim(),
-          banner_url: bannerPreview,
-          status: "para_assistir",
-          projeto_id: projetoId,
-        }),
-      });
-      if (!res.ok) throw new Error("Erro ao salvar");
+      const dados = {
+        titulo: titulo.trim(),
+        genero: genero.trim(),
+        ano: ano ? parseInt(ano) : null,
+        sinopse: sinopse.trim(),
+        plataforma: plataforma.trim(),
+        link_streaming: linkStreaming.trim(),
+        banner_url: bannerPreview,
+      };
+
+      if (filmeEditando) {
+        // Atualizar filme existente
+        const res = await fetch(`/api/filmes/${filmeEditando.id}`, {
+          method: "PATCH",
+          body: JSON.stringify(dados),
+        });
+        if (!res.ok) throw new Error("Erro ao atualizar");
+      } else {
+        // Criar novo filme
+        const res = await fetch("/api/filmes", {
+          method: "POST",
+          body: JSON.stringify({
+            ...dados,
+            status: "para_assistir",
+            projeto_id: projetoId,
+          }),
+        });
+        if (!res.ok) throw new Error("Erro ao adicionar");
+      }
 
       resetForm();
       onFechar();
       onAdicionado();
     } catch (e) {
-      alert("Erro ao adicionar filme");
+      alert("Erro ao salvar filme");
       console.error(e);
     } finally {
       setSalvando(false);
@@ -112,7 +142,9 @@ export default function AdicionarFilmeProjetoModal({
       onClick={(e) => e.target === e.currentTarget && onFechar()}
     >
       <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl">
-        <h2 className="mb-5 text-2xl font-bold">🎬 Adicionar Filme</h2>
+        <h2 className="mb-5 text-2xl font-bold">
+          {filmeEditando ? "✏️ Editar Filme" : "🎬 Adicionar Filme"}
+        </h2>
 
         <input
           value={titulo}
@@ -196,7 +228,7 @@ export default function AdicionarFilmeProjetoModal({
             className="flex-1 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all disabled:opacity-50"
             style={{ background: "var(--accent)" }}
           >
-            {salvando ? "Salvando..." : "Adicionar"}
+            {salvando ? "Salvando..." : filmeEditando ? "Atualizar" : "Adicionar"}
           </button>
         </div>
       </div>

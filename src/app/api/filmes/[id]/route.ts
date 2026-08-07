@@ -11,6 +11,10 @@ const CAMPOS_PERMITIDOS = [
   "motivo_ia",
   "nota_brunno",
   "nota_paloma",
+  "sinopse",
+  "ano",
+  "link_streaming",
+  "banner_url",
 ] as const;
 
 export async function PATCH(
