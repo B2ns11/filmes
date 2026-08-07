@@ -23,6 +23,7 @@ export default function MarcarAssistidoModal({
   if (!filme || !aberto) return null;
 
   async function salvar() {
+    if (!filme) return;
     if (!notaBrunno && !notaPaloma) {
       alert("Coloque pelo menos uma nota!");
       return;
