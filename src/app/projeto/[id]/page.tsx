@@ -83,7 +83,7 @@ export default function ProjetoPage() {
   if (carregando || !projeto) {
     return (
       <main className="min-h-dvh bg-surface">
-        <div className="mx-auto max-w-4xl px-4 py-6">
+        <div className="px-4 py-6">
           <div className="flex items-center gap-2 text-sm text-muted">
             <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-border border-t-[var(--accent)]" />
             Carregando...
@@ -97,7 +97,7 @@ export default function ProjetoPage() {
     <main className="min-h-dvh bg-surface">
       {/* Cabeçalho temático */}
       <div style={temaCfg ? { background: temaCfg.bg } : {}} className="border-b border-border">
-        <div className="mx-auto max-w-4xl px-4 py-6">
+        <div className="px-4 py-6">
           <Link href="/projetos" className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
             ← Voltar aos Projetos
           </Link>
@@ -109,8 +109,8 @@ export default function ProjetoPage() {
             <div>
               <h1 className="text-3xl font-bold">{projeto.nome}</h1>
               <p className="mt-1 text-sm text-muted">{projeto.descricao}</p>
-              {projeto.tema && (
-                <span className="mt-2 inline-block rounded px-2 py-1 text-xs font-medium" style={{ color: temaCfg?.cor, background: `${temaCfg?.cor}15` }}>
+              {projeto.tema && temaCfg && (
+                <span className="mt-2 inline-block rounded px-2 py-1 text-xs font-medium" style={{ color: temaCfg.cor, background: `${temaCfg.cor}15` }}>
                   Tema: {projeto.tema.toUpperCase()}
                 </span>
               )}
@@ -140,7 +140,7 @@ export default function ProjetoPage() {
       </div>
 
       {/* Conteúdo */}
-      <div className="mx-auto max-w-4xl px-4 py-6">
+      <div className="px-4 py-6">
         {/* Abas */}
         <div className="mb-6 flex gap-2 border-b border-border">
           {(["assistidos", "para_assistir"] as const).map((tab) => (
