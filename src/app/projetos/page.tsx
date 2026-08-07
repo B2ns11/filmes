@@ -100,7 +100,7 @@ export default function ProjetosPage() {
 
   return (
     <main className="min-h-dvh bg-surface">
-      <div className="mx-auto max-w-4xl px-4 py-6">
+      <div className="px-4 py-6">
         {/* Cabeçalho */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>

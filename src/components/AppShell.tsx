@@ -44,7 +44,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh bg-surface text-ink">
       <header className="sticky top-0 z-10 border-b border-border bg-surface-alt/90 pt-safe backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 pb-3">
+        <div className="flex items-center justify-between gap-3 px-4 pb-3">
           <span className="flex items-center gap-2 font-semibold">
             <span
               className="flex h-8 w-8 items-center justify-center rounded-app text-white"
@@ -54,6 +54,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </span>
             Cinema
           </span>
+
+          <Link href="/projetos" className="text-sm text-muted hover:text-ink transition-colors">
+            📁 Projetos
+          </Link>
 
           <button
             onClick={sair}
