@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import AdicionarFilmeProjetoModal from "@/components/AdicionarFilmeProjetoModal";
+import MarcarAssistidoModal from "@/components/MarcarAssistidoModal";
 import type { Projeto, Filme } from "@/lib/types";
 import { media } from "@/lib/types";
 
@@ -24,6 +25,7 @@ export default function ProjetoPage() {
   const [modalAberto, setModalAberto] = useState(false);
   const [filmeEditando, setFilmeEditando] = useState<Filme | null>(null);
   const [deletando, setDeletando] = useState<string | null>(null);
+  const [filmeMarcarAssistido, setFilmeMarcarAssistido] = useState<Filme | null>(null);
 
   const temaCfg = projeto?.tema ? TEMAS[projeto.tema] : null;
 
@@ -269,13 +271,22 @@ export default function ProjetoPage() {
                   )}
 
                   {/* Botões */}
-                  <div className="flex gap-2 mt-3">
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {aba === "para_assistir" && (
+                      <button
+                        onClick={() => setFilmeMarcarAssistido(f)}
+                        className="flex-1 min-w-fit rounded-lg px-3 py-2 text-xs font-semibold text-white transition-all hover:scale-105 active:scale-95"
+                        style={{ background: "var(--accent)" }}
+                      >
+                        ✓ Assistir
+                      </button>
+                    )}
                     {f.link_streaming && (
                       <a
                         href={f.link_streaming}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 rounded-lg px-3 py-2 text-xs font-semibold text-white text-center transition-all hover:scale-105 active:scale-95"
+                        className="flex-1 min-w-fit rounded-lg px-3 py-2 text-xs font-semibold text-white text-center transition-all hover:scale-105 active:scale-95"
                         style={{ background: "var(--accent)" }}
                       >
                         ▶️ Reproduzir
@@ -316,6 +327,14 @@ export default function ProjetoPage() {
           onAdicionado={carregar}
         />
       )}
+
+      {/* Modal Marcar como Assistido */}
+      <MarcarAssistidoModal
+        filme={filmeMarcarAssistido}
+        aberto={!!filmeMarcarAssistido}
+        onFechar={() => setFilmeMarcarAssistido(null)}
+        onSalvar={carregar}
+      />
       </main>
     </AppShell>
   );
