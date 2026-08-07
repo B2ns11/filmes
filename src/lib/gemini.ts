@@ -70,6 +70,48 @@ export interface DadosFilmeIA {
   link_streaming?: string;
 }
 
+async function buscarLinkBrasil(
+  titulo: string,
+  plataforma: string | undefined
+): Promise<string | undefined> {
+  if (!plataforma) return undefined;
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return undefined;
+
+  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: modelName,
+    generationConfig: {
+      responseMimeType: "application/json",
+    },
+  });
+
+  const prompt = `Procure o link EXATO e FUNCIONAL para assistir "${titulo}" na plataforma "${plataforma}" NO BRASIL.
+
+Tente encontrar:
+- Se é Netflix: link tipo https://www.netflix.com/title/...
+- Se é Disney+: link tipo https://www.disneyplus.com/pt-br/video/...
+- Se é Prime Video: link tipo https://www.primevideo.com/dp/...
+- Se é HBO Max: link tipo https://www.hbomax.com/br/...
+- Se é Globoplay: link tipo https://globoplay.globo.com/...
+
+Responda APENAS com JSON válido:
+{
+  "link": "URL completa funcional ou vazio se não encontrar com certeza"
+}`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    const parsed = JSON.parse(text);
+    return parsed.link && typeof parsed.link === "string" ? parsed.link : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function preencherDadosFilme(titulo: string): Promise<DadosFilmeIA> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -92,8 +134,16 @@ export async function preencherDadosFilme(titulo: string): Promise<DadosFilmeIA>
 Se o título for ambíguo, escolha a versão mais popular/recente.
 Se não encontrar o filme, retorne valores padrão (vazio para strings, null para numbers).
 
-IMPORTANTE: Para plataforma, identifique onde está disponível NO BRASIL (Netflix, Prime Video, Disney+, HBO Max, Globoplay, etc).
-IMPORTANTE: Para link_streaming, procure o link oficial (ex: https://www.disneyplus.com/...) ou deixe vazio se não souber.
+IMPORTANTE - BUSCAR LINKS DO BRASIL:
+1. Identifique onde está disponível NO BRASIL (Netflix, Prime Video, Disney+, HBO Max, Globoplay, etc).
+2. Procure o link DIRETO para a plataforma brasileira:
+   - Disney+ Brasil: https://www.disneyplus.com/pt-br/...
+   - Netflix Brasil: https://www.netflix.com/title/...
+   - Prime Video Brasil: https://www.primevideo.com/dp/...
+   - HBO Max Brasil: https://www.hbomax.com/br/...
+   - Globoplay Brasil: https://globoplay.globo.com/...
+3. Se encontrar em JustWatch Brasil ou similares, tente retornar o link mais confiável.
+4. Se não tiver certeza do link exato, deixe vazio.
 
 Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
 {
@@ -101,8 +151,8 @@ Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
   "ano": "number (ano de lançamento) ou null",
   "sinopse": "string (descrição breve do filme em português, 2-3 frases)",
   "fase": "string (se for franquia tipo MCU: Fase 1, Fase 2, etc. ou vazio se não aplicável)",
-  "plataforma": "string (plataforma de streaming no Brasil onde está disponível, ex: Disney+, Netflix, Prime Video, etc) ou vazio",
-  "link_streaming": "string (URL completa do link para assistir) ou vazio"
+  "plataforma": "string (plataforma de streaming no Brasil onde está disponível) ou vazio",
+  "link_streaming": "string (URL completa do link direto para assistir NO BRASIL) ou vazio"
 }`;
 
   const result = await model.generateContent(prompt);
@@ -124,13 +174,21 @@ Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
   }
 
   const data = parsed as Record<string, unknown>;
+  let link_streaming = typeof data.link_streaming === "string" && data.link_streaming ? data.link_streaming : undefined;
+  const plataforma = typeof data.plataforma === "string" && data.plataforma ? data.plataforma : undefined;
+
+  // Se não tiver link mas tiver plataforma, tenta buscar o link específico
+  if (!link_streaming && plataforma) {
+    link_streaming = await buscarLinkBrasil(titulo, plataforma);
+  }
+
   return {
     genero: typeof data.genero === "string" ? data.genero : "",
     ano: typeof data.ano === "number" ? data.ano : null,
     sinopse: typeof data.sinopse === "string" ? data.sinopse : "",
     fase: typeof data.fase === "string" && data.fase ? data.fase : undefined,
-    plataforma: typeof data.plataforma === "string" && data.plataforma ? data.plataforma : undefined,
-    link_streaming: typeof data.link_streaming === "string" && data.link_streaming ? data.link_streaming : undefined,
+    plataforma,
+    link_streaming,
   };
 }
 
