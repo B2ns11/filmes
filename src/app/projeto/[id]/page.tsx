@@ -217,7 +217,12 @@ export default function ProjetoPage() {
             {filmesDaAba.map((f) => (
               <div
                 key={f.id}
-                className="flex gap-4 rounded-xl border border-border/50 bg-card/50 overflow-hidden hover:border-border hover:shadow-lg transition-all backdrop-blur-sm"
+                onClick={() => {
+                  if (aba === "para_assistir") {
+                    setFilmeMarcarAssistido(f);
+                  }
+                }}
+                className={`flex gap-4 rounded-xl border border-border/50 bg-card/50 overflow-hidden hover:border-border hover:shadow-lg transition-all backdrop-blur-sm ${aba === "para_assistir" ? "cursor-pointer" : ""}`}
               >
                 {/* Banner do lado esquerdo */}
                 {f.banner_url ? (
