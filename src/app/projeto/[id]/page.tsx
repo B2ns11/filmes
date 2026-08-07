@@ -6,27 +6,11 @@ import Link from "next/link";
 import type { Projeto, Filme } from "@/lib/types";
 import { media } from "@/lib/types";
 
-const TEMAS: Record<string, { cor: string; bg: string; glow: string }> = {
-  mcu: {
-    cor: "#E23636",
-    bg: "linear-gradient(135deg, rgba(226,54,54,0.1) 0%, rgba(226,54,54,0.05) 100%)",
-    glow: "rgba(226, 54, 54, 0.15)",
-  },
-  hp: {
-    cor: "#7B2CBF",
-    bg: "linear-gradient(135deg, rgba(123,44,191,0.1) 0%, rgba(123,44,191,0.05) 100%)",
-    glow: "rgba(123, 44, 191, 0.15)",
-  },
-  sw: {
-    cor: "#FFE81F",
-    bg: "linear-gradient(135deg, rgba(255,232,31,0.1) 0%, rgba(255,232,31,0.05) 100%)",
-    glow: "rgba(255, 232, 31, 0.15)",
-  },
-  lotr: {
-    cor: "#C9A227",
-    bg: "linear-gradient(135deg, rgba(201,162,39,0.1) 0%, rgba(201,162,39,0.05) 100%)",
-    glow: "rgba(201, 162, 39, 0.15)",
-  },
+const TEMAS: Record<string, { cor: string; bg: string }> = {
+  mcu: { cor: "#E23636", bg: "linear-gradient(135deg, rgba(226,54,54,0.08) 0%, rgba(226,54,54,0.02) 100%)" },
+  hp: { cor: "#7B2CBF", bg: "linear-gradient(135deg, rgba(123,44,191,0.08) 0%, rgba(123,44,191,0.02) 100%)" },
+  sw: { cor: "#FFE81F", bg: "linear-gradient(135deg, rgba(255,232,31,0.08) 0%, rgba(255,232,31,0.02) 100%)" },
+  lotr: { cor: "#C9A227", bg: "linear-gradient(135deg, rgba(201,162,39,0.08) 0%, rgba(201,162,39,0.02) 100%)" },
 };
 
 export default function ProjetoPage() {
@@ -95,65 +79,77 @@ export default function ProjetoPage() {
 
   return (
     <main className="min-h-dvh bg-surface">
-      {/* Cabeçalho temático */}
-      <div style={temaCfg ? { background: temaCfg.bg } : {}} className="border-b border-border">
-        <div className="px-4 py-6">
-          <Link href="/projetos" className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
+      {/* Cabeçalho com fundo temático */}
+      <div style={{ background: temaCfg?.bg }} className="border-b border-border/50">
+        <div className="px-4 py-8">
+          <Link href="/projetos" className="mb-6 inline-flex items-center gap-1 text-sm text-muted hover:text-ink transition-colors">
             ← Voltar aos Projetos
           </Link>
 
-          <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-xl text-4xl" style={temaCfg ? { background: `${temaCfg.cor}20` } : {}}>
+          <div className="flex items-start gap-5">
+            <div
+              className="flex h-20 w-20 items-center justify-center rounded-2xl text-5xl flex-shrink-0 shadow-lg"
+              style={{ background: `${temaCfg?.cor}20`, border: `2px solid ${temaCfg?.cor}30` }}
+            >
               {projeto.emoji}
             </div>
-            <div>
-              <h1 className="text-3xl font-bold">{projeto.nome}</h1>
-              <p className="mt-1 text-sm text-muted">{projeto.descricao}</p>
+            <div className="flex-1">
+              <h1 className="text-4xl font-bold">{projeto.nome}</h1>
+              {projeto.descricao && <p className="mt-2 text-base text-muted">{projeto.descricao}</p>}
               {projeto.tema && temaCfg && (
-                <span className="mt-2 inline-block rounded px-2 py-1 text-xs font-medium" style={{ color: temaCfg.cor, background: `${temaCfg.cor}15` }}>
-                  Tema: {projeto.tema.toUpperCase()}
-                </span>
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5" style={{ background: `${temaCfg.cor}15` }}>
+                  <span className="text-xs font-semibold" style={{ color: temaCfg.cor }}>
+                    🎬 {projeto.tema.toUpperCase()}
+                  </span>
+                </div>
               )}
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="mt-6 grid grid-cols-4 gap-3">
-            <div className="rounded-app border border-border bg-card p-3 text-center">
-              <p className="text-2xl font-bold">{stats.assistidos}</p>
-              <p className="text-xs text-muted">Assistidos</p>
-            </div>
-            <div className="rounded-app border border-border bg-card p-3 text-center">
-              <p className="text-2xl font-bold">{stats.paraAssistir}</p>
-              <p className="text-xs text-muted">Na Fila</p>
-            </div>
-            <div className="rounded-app border border-border bg-card p-3 text-center">
-              <p className="text-2xl font-bold">{stats.media}</p>
-              <p className="text-xs text-muted">Média Geral</p>
-            </div>
-            <div className="rounded-app border border-border bg-card p-3 text-center">
-              <p className="text-2xl font-bold">{stats.percentual}%</p>
-              <p className="text-xs text-muted">Concluído</p>
-            </div>
+          {/* Stats Cards */}
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { label: "Assistidos", value: stats.assistidos, icon: "👁️" },
+              { label: "Na Fila", value: stats.paraAssistir, icon: "📋" },
+              { label: "Média", value: stats.media, icon: "⭐" },
+              { label: "Concluído", value: `${stats.percentual}%`, icon: "✅" },
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-border/50 bg-card/50 p-4 backdrop-blur-sm hover:border-border transition-colors"
+                style={{ borderColor: temaCfg ? `${temaCfg.cor}20` : undefined }}
+              >
+                <p className="text-xs text-muted mb-1">{stat.icon} {stat.label}</p>
+                <p className="text-3xl font-bold" style={{ color: temaCfg?.cor }}>
+                  {stat.value}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Conteúdo */}
-      <div className="px-4 py-6">
-        {/* Abas */}
-        <div className="mb-6 flex gap-2 border-b border-border">
+      <div className="px-4 py-8">
+        {/* Abas estilizadas */}
+        <div className="mb-8 flex gap-3 border-b border-border/50">
           {(["assistidos", "para_assistir"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setAba(tab)}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
+              className={`px-5 py-3 text-sm font-semibold rounded-t-xl transition-all ${
                 aba === tab
-                  ? "border-b-2 text-ink"
+                  ? "text-ink"
                   : "text-muted hover:text-ink"
               }`}
               style={
-                aba === tab ? { borderColor: temaCfg?.cor || "var(--accent)" } : {}
+                aba === tab
+                  ? {
+                      background: `${temaCfg?.cor}15`,
+                      borderBottom: `3px solid ${temaCfg?.cor}`,
+                      color: temaCfg?.cor
+                    }
+                  : {}
               }
             >
               {tab === "assistidos" ? "👁️ Assistidos" : "📋 Para Assistir"}
@@ -163,31 +159,54 @@ export default function ProjetoPage() {
 
         {/* Lista de filmes */}
         {filmesDaAba.length === 0 ? (
-          <div className="rounded-app border border-dashed border-border p-8 text-center">
+          <div className="rounded-xl border-2 border-dashed border-border/50 p-12 text-center">
+            <p className="text-2xl mb-2">🎬</p>
             <p className="text-sm text-muted">Nenhum filme nesta seção</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filmesDaAba.map((f) => (
-              <div key={f.id} className="rounded-app border border-border bg-card p-4">
-                <h3 className="font-semibold">{f.titulo}</h3>
-                <p className="mt-1 text-xs text-muted">
-                  {f.genero} • {f.ano || "—"} • {f.plataforma}
-                </p>
-                {f.nota_brunno !== null || f.nota_paloma !== null ? (
-                  <div className="mt-2 flex gap-4 text-xs">
+              <div
+                key={f.id}
+                className="group rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm hover:border-border hover:shadow-lg transition-all"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="font-bold text-base line-clamp-2 flex-1 group-hover:text-[var(--accent)] transition-colors">
+                    {f.titulo}
+                  </h3>
+                </div>
+
+                <div className="space-y-2 text-xs text-muted mb-4">
+                  {f.genero && <p>🎭 {f.genero}</p>}
+                  {f.ano && <p>📅 {f.ano}</p>}
+                  {f.plataforma && <p>📺 {f.plataforma}</p>}
+                </div>
+
+                {/* Notas */}
+                {(f.nota_brunno !== null || f.nota_paloma !== null) ? (
+                  <div className="space-y-2 border-t border-border/30 pt-3">
                     {f.nota_brunno !== null && (
-                      <span>
-                        Brunno: <strong>{f.nota_brunno.toFixed(1)}</strong>
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted">Brunno</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm font-bold">{f.nota_brunno.toFixed(1)}</span>
+                          <span className="text-xs">⭐</span>
+                        </div>
+                      </div>
                     )}
                     {f.nota_paloma !== null && (
-                      <span>
-                        Paloma: <strong>{f.nota_paloma.toFixed(1)}</strong>
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted">Paloma</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm font-bold">{f.nota_paloma.toFixed(1)}</span>
+                          <span className="text-xs">⭐</span>
+                        </div>
+                      </div>
                     )}
                   </div>
-                ) : null}
+                ) : (
+                  <div className="text-xs text-muted italic text-center py-3">Sem avaliações</div>
+                )}
               </div>
             ))}
           </div>

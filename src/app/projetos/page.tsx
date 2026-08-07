@@ -100,19 +100,19 @@ export default function ProjetosPage() {
 
   return (
     <main className="min-h-dvh bg-surface">
-      <div className="px-4 py-6">
-        {/* Cabeçalho */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="px-4 py-8">
+        {/* Cabeçalho com estilo melhorado */}
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">📁 Projetos</h1>
-            <p className="text-sm text-muted">Organize seus filmes em coleções temáticas</p>
+            <h1 className="text-4xl font-bold">📁 Projetos</h1>
+            <p className="mt-2 text-base text-muted">Organize seus filmes em coleções temáticas</p>
           </div>
           <button
             onClick={() => {
               resetForm();
               setModalCriar(true);
             }}
-            className="rounded-app px-4 py-2 text-sm font-medium text-white transition-all hover:scale-105 active:scale-95"
+            className="rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
             style={{ background: "var(--accent)" }}
           >
             + Novo Projeto
@@ -126,46 +126,50 @@ export default function ProjetosPage() {
             Carregando...
           </div>
         ) : projetos.length === 0 ? (
-          <div className="rounded-app border border-dashed border-border p-10 text-center">
-            <p className="mb-3 text-4xl">📂</p>
-            <p className="text-sm text-muted">Nenhum projeto. Crie o primeiro!</p>
+          <div className="rounded-xl border-2 border-dashed border-border/50 p-12 text-center">
+            <p className="mb-3 text-5xl">📂</p>
+            <p className="text-base text-muted">Nenhum projeto. Crie o primeiro!</p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {projetos.map((p) => {
               const temaCfg = p.tema ? TEMAS[p.tema] : null;
               return (
                 <div
                   key={p.id}
-                  className="overflow-hidden rounded-app border transition-all hover:shadow-lg"
-                  style={{
-                    borderColor: temaCfg ? `${temaCfg.cor}40` : "var(--border)",
-                    background: temaCfg ? temaCfg.bg : "transparent",
-                  }}
+                  className="group overflow-hidden rounded-xl border border-border/50 transition-all hover:border-border hover:shadow-lg bg-card/50 backdrop-blur-sm"
                 >
-                  <Link href={`/projeto/${p.id}`} className="block p-4">
-                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg text-2xl" style={temaCfg ? { background: `${temaCfg.cor}15` } : {}}>
+                  <Link href={`/projeto/${p.id}`} className="block p-5">
+                    <div
+                      className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl text-3xl transition-transform group-hover:scale-110"
+                      style={{
+                        background: temaCfg ? `${temaCfg.cor}20` : "rgba(255,255,255,0.1)",
+                        border: temaCfg ? `1px solid ${temaCfg.cor}30` : "1px solid rgba(255,255,255,0.2)",
+                      }}
+                    >
                       {p.emoji}
                     </div>
-                    <h3 className="font-semibold">{p.nome}</h3>
-                    {p.descricao && <p className="mt-1 text-xs text-muted">{p.descricao}</p>}
+                    <h3 className="text-lg font-bold group-hover:text-[var(--accent)] transition-colors">{p.nome}</h3>
+                    {p.descricao && <p className="mt-2 text-sm text-muted line-clamp-2">{p.descricao}</p>}
                     {p.tema && temaCfg && (
-                      <span className="mt-2 inline-block rounded px-2 py-1 text-xs font-medium" style={{ color: temaCfg.cor, background: `${temaCfg.cor}15` }}>
-                        {p.tema.toUpperCase()}
-                      </span>
+                      <div className="mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5" style={{ background: `${temaCfg.cor}15` }}>
+                        <span className="text-xs font-semibold" style={{ color: temaCfg.cor }}>
+                          {p.tema.toUpperCase()}
+                        </span>
+                      </div>
                     )}
                   </Link>
-                  <div className="border-t border-border px-4 py-2 flex gap-2">
+                  <div className="border-t border-border/30 px-5 py-3 flex gap-2 bg-card/25">
                     <button
                       onClick={() => abrirEdicao(p)}
-                      className="flex-1 rounded px-2 py-1 text-xs hover:bg-surface-alt"
+                      className="flex-1 rounded-lg px-2 py-2 text-xs font-medium transition-colors hover:bg-[var(--accent)]/20 hover:text-[var(--accent)]"
                     >
                       ✏️ Editar
                     </button>
                     <button
                       onClick={() => deletar(p.id)}
                       disabled={deletando === p.id}
-                      className="flex-1 rounded px-2 py-1 text-xs text-red-500 hover:bg-red-500/10 disabled:opacity-50"
+                      className="flex-1 rounded-lg px-2 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-500/20 disabled:opacity-50"
                     >
                       {deletando === p.id ? "Deletando..." : "🗑️ Deletar"}
                     </button>
@@ -180,59 +184,60 @@ export default function ProjetosPage() {
       {/* Modal */}
       {modalCriar && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
           onClick={(e) => e.target === e.currentTarget && fecharModal()}
         >
-          <div className="w-full max-w-md rounded-app border border-border bg-card p-6">
-            <h2 className="mb-4 text-lg font-semibold">
-              {modalEditar ? "Editar Projeto" : "Novo Projeto"}
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-2xl">
+            <h2 className="mb-6 text-2xl font-bold">
+              {modalEditar ? "✏️ Editar Projeto" : "✨ Novo Projeto"}
             </h2>
 
             <input
               value={nome}
               onChange={(e) => setNome(e.target.value)}
-              placeholder="Nome"
-              className="mb-3 w-full rounded-app border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+              placeholder="Nome do projeto"
+              className="mb-4 w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-[var(--accent)] transition-colors"
             />
 
             <input
               value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
               placeholder="Descrição (opcional)"
-              className="mb-3 w-full rounded-app border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+              className="mb-4 w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-[var(--accent)] transition-colors"
             />
 
-            <input
-              value={emoji}
-              onChange={(e) => setEmoji(e.target.value)}
-              placeholder="Emoji"
-              maxLength={2}
-              className="mb-3 w-full rounded-app border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
-            />
+            <div className="mb-4 flex items-center gap-3">
+              <input
+                value={emoji}
+                onChange={(e) => setEmoji(e.target.value)}
+                placeholder="🎬"
+                maxLength={2}
+                className="w-16 rounded-xl border border-border bg-surface px-4 py-3 text-2xl text-center outline-none focus:border-[var(--accent)] transition-colors"
+              />
+              <select
+                value={tema}
+                onChange={(e) => setTema(e.target.value as any)}
+                className="flex-1 rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-[var(--accent)] transition-colors"
+              >
+                <option value="">Sem tema</option>
+                <option value="mcu">🦸 Marvel (MCU)</option>
+                <option value="hp">🧙 Harry Potter</option>
+                <option value="sw">⚔️ Star Wars</option>
+                <option value="lotr">💍 Senhor dos Anéis</option>
+              </select>
+            </div>
 
-            <select
-              value={tema}
-              onChange={(e) => setTema(e.target.value as any)}
-              className="mb-4 w-full rounded-app border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
-            >
-              <option value="">Sem tema</option>
-              <option value="mcu">🦸 Marvel (MCU)</option>
-              <option value="hp">🧙 Harry Potter</option>
-              <option value="sw">⚔️ Star Wars</option>
-              <option value="lotr">💍 Senhor dos Anéis</option>
-            </select>
-
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={fecharModal}
-                className="flex-1 rounded-app border border-border px-4 py-2 text-sm hover:bg-surface-alt"
+                className="flex-1 rounded-xl border border-border px-4 py-3 text-sm font-medium transition-colors hover:bg-surface-alt"
               >
                 Cancelar
               </button>
               <button
                 onClick={salvar}
                 disabled={salvando || !nome.trim()}
-                className="flex-1 rounded-app px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                className="flex-1 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all disabled:opacity-50"
                 style={{ background: "var(--accent)" }}
               >
                 {salvando ? "Salvando..." : "Salvar"}
