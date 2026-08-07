@@ -50,7 +50,7 @@ export default function MarcarAssistidoModal({
 
       if (!res.ok) throw new Error("Erro ao salvar");
 
-      onSalvar();
+      await onSalvar();
       onFechar();
     } catch (e) {
       alert("Erro ao marcar como assistido");
