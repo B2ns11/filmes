@@ -50,6 +50,8 @@ export async function POST(req: NextRequest) {
         projeto_id: body.projeto_id || null,
         sinopse: body.sinopse || null,
         ano: body.ano || null,
+        link_streaming: body.link_streaming || null,
+        banner_url: body.banner_url || null,
       })
       .select()
       .single();
