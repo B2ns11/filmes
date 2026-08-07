@@ -21,7 +21,10 @@ export default function MarcarAssistidoForm({
   if (!aberto) {
     return (
       <button
-        onClick={() => setAberto(true)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setAberto(true);
+        }}
         className="self-start text-xs font-medium"
         style={{ color: "var(--accent)" }}
       >
@@ -50,7 +53,7 @@ export default function MarcarAssistidoForm({
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-app border border-border p-3">
+    <div className="flex flex-col gap-2 rounded-app border border-border p-3" onClick={(e) => e.stopPropagation()}>
       <input
         type="text"
         placeholder="Plataforma (Netflix, Prime, HBO, etc...)"
@@ -83,14 +86,20 @@ export default function MarcarAssistidoForm({
       </div>
       <div className="flex gap-2">
         <button
-          onClick={confirmar}
+          onClick={(e) => {
+            e.stopPropagation();
+            confirmar();
+          }}
           disabled={salvando}
           className="rounded-app px-3 py-1.5 text-xs font-medium text-white disabled:opacity-60"
           style={{ background: "var(--accent)" }}
         >
           {salvando ? "Salvando..." : "Confirmar"}
         </button>
-        <button onClick={() => setAberto(false)} className="text-xs text-muted">
+        <button onClick={(e) => {
+          e.stopPropagation();
+          setAberto(false);
+        }} className="text-xs text-muted">
           Cancelar
         </button>
       </div>

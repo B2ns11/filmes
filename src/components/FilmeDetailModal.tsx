@@ -56,8 +56,6 @@ export default function FilmeDetailModal({
         plataforma,
         link_streaming: linkStreaming || undefined,
         categoria,
-        nota_brunno: notaBrunno ? Number(notaBrunno) : null,
-        nota_paloma: notaPaloma ? Number(notaPaloma) : null,
       });
       onAtualizado();
       setEditando(false);
@@ -192,33 +190,6 @@ export default function FilmeDetailModal({
                   className="mt-1 w-full rounded-app border border-border bg-surface-alt px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
                   placeholder="https://..."
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs text-muted">Nota Brunno</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={10}
-                    step={0.5}
-                    value={notaBrunno}
-                    onChange={(e) => setNotaBrunno(e.target.value)}
-                    className="mt-1 w-full rounded-app border border-border bg-surface-alt px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted">Nota Paloma</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={10}
-                    step={0.5}
-                    value={notaPaloma}
-                    onChange={(e) => setNotaPaloma(e.target.value)}
-                    className="mt-1 w-full rounded-app border border-border bg-surface-alt px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
-                  />
-                </div>
               </div>
             </div>
 
