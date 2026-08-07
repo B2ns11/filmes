@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import AppShell from "@/components/AppShell";
 import type { Projeto } from "@/lib/types";
 
 const TEMAS: Record<string, { cor: string; bg: string }> = {
@@ -99,8 +100,9 @@ export default function ProjetosPage() {
   }
 
   return (
-    <main className="min-h-dvh bg-surface">
-      <div className="px-4 py-8">
+    <AppShell>
+      <main className="min-h-dvh bg-surface">
+        <div className="px-4 py-8">
         {/* Cabeçalho com estilo melhorado */}
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -246,6 +248,7 @@ export default function ProjetosPage() {
           </div>
         </div>
       )}
-    </main>
+      </main>
+    </AppShell>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import AppShell from "@/components/AppShell";
 import type { Projeto, Filme } from "@/lib/types";
 import { media } from "@/lib/types";
 
@@ -66,19 +67,22 @@ export default function ProjetoPage() {
 
   if (carregando || !projeto) {
     return (
-      <main className="min-h-dvh bg-surface">
-        <div className="px-4 py-6">
-          <div className="flex items-center gap-2 text-sm text-muted">
-            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-border border-t-[var(--accent)]" />
-            Carregando...
+      <AppShell>
+        <main className="min-h-dvh bg-surface">
+          <div className="px-4 py-6">
+            <div className="flex items-center gap-2 text-sm text-muted">
+              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-border border-t-[var(--accent)]" />
+              Carregando...
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </AppShell>
     );
   }
 
   return (
-    <main className="min-h-dvh bg-surface">
+    <AppShell>
+      <main className="min-h-dvh bg-surface">
       {/* Cabeçalho com fundo temático */}
       <div style={{ background: temaCfg?.bg }} className="border-b border-border/50">
         <div className="px-4 py-8">
@@ -212,6 +216,7 @@ export default function ProjetoPage() {
           </div>
         )}
       </div>
-    </main>
+      </main>
+    </AppShell>
   );
 }
