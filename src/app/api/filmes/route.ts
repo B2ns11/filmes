@@ -4,11 +4,15 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 export async function GET(req: NextRequest) {
   try {
     const status = req.nextUrl.searchParams.get("status");
+    const projetoId = req.nextUrl.searchParams.get("projetoId");
     const db = supabaseAdmin();
 
     let query = db.from("filmes").select("*").order("criado_em", { ascending: false });
     if (status) {
       query = query.eq("status", status);
+    }
+    if (projetoId) {
+      query = query.eq("projeto_id", projetoId);
     }
 
     const { data, error } = await query;

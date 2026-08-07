@@ -2,6 +2,16 @@ export type Usuario = "brunno" | "paloma";
 
 export type StatusFilme = "assistido" | "para_assistir" | "sugestao_ia";
 export type OrigemFilme = "usuario" | "ia" | "planilha";
+export type TemaProjeto = "mcu" | "hp" | "sw" | "lotr" | null;
+
+export interface Projeto {
+  id: string;
+  nome: string;
+  descricao: string | null;
+  emoji: string;
+  tema: TemaProjeto;
+  criado_em: string;
+}
 
 export interface Filme {
   id: string;
@@ -16,6 +26,11 @@ export interface Filme {
   motivo_ia: string;
   nota_brunno: number | null;
   nota_paloma: number | null;
+  projeto_id: string | null;
+  banner_url: string | null;
+  sinopse: string | null;
+  ano: number | null;
+  fase: string | null;
   criado_em: string;
   atualizado_em: string;
 }
