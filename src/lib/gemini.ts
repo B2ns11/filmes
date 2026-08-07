@@ -66,6 +66,8 @@ export interface DadosFilmeIA {
   ano: number | null;
   sinopse: string;
   fase?: string;
+  plataforma?: string;
+  link_streaming?: string;
 }
 
 export async function preencherDadosFilme(titulo: string): Promise<DadosFilmeIA> {
@@ -90,12 +92,17 @@ export async function preencherDadosFilme(titulo: string): Promise<DadosFilmeIA>
 Se o título for ambíguo, escolha a versão mais popular/recente.
 Se não encontrar o filme, retorne valores padrão (vazio para strings, null para numbers).
 
+IMPORTANTE: Para plataforma, identifique onde está disponível NO BRASIL (Netflix, Prime Video, Disney+, HBO Max, Globoplay, etc).
+IMPORTANTE: Para link_streaming, procure o link oficial (ex: https://www.disneyplus.com/...) ou deixe vazio se não souber.
+
 Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
 {
   "genero": "string (gêneros separados por vírgula, ex: Ação, Ficção Científica)",
   "ano": "number (ano de lançamento) ou null",
   "sinopse": "string (descrição breve do filme em português, 2-3 frases)",
-  "fase": "string (se for franquia tipo MCU: Fase 1, Fase 2, etc. ou vazio se não aplicável)"
+  "fase": "string (se for franquia tipo MCU: Fase 1, Fase 2, etc. ou vazio se não aplicável)",
+  "plataforma": "string (plataforma de streaming no Brasil onde está disponível, ex: Disney+, Netflix, Prime Video, etc) ou vazio",
+  "link_streaming": "string (URL completa do link para assistir) ou vazio"
 }`;
 
   const result = await model.generateContent(prompt);
@@ -122,6 +129,8 @@ Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
     ano: typeof data.ano === "number" ? data.ano : null,
     sinopse: typeof data.sinopse === "string" ? data.sinopse : "",
     fase: typeof data.fase === "string" && data.fase ? data.fase : undefined,
+    plataforma: typeof data.plataforma === "string" && data.plataforma ? data.plataforma : undefined,
+    link_streaming: typeof data.link_streaming === "string" && data.link_streaming ? data.link_streaming : undefined,
   };
 }
 
