@@ -1,18 +1,15 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { data, error } = await supabase
+  const { id } = await params;
+  const db = supabaseAdmin();
+  const { data, error } = await db
     .from("projetos")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (error) {
@@ -24,14 +21,16 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const body = await req.json();
 
-  const { data, error } = await supabase
+  const db = supabaseAdmin();
+  const { data, error } = await db
     .from("projetos")
     .update(body)
-    .eq("id", params.id)
+    .eq("id", id)
     .select()
     .single();
 
@@ -44,12 +43,14 @@ export async function PATCH(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error } = await supabase
+  const { id } = await params;
+  const db = supabaseAdmin();
+  const { error } = await db
     .from("projetos")
     .delete()
-    .eq("id", params.id);
+    .eq("id", id);
 
   if (error) {
     return Response.json({ error: error.message }, { status: 500 });

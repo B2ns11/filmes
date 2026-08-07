@@ -1,12 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET() {
-  const { data, error } = await supabase
+  const db = supabaseAdmin();
+  const { data, error } = await db
     .from("projetos")
     .select("*")
     .order("criado_em", { ascending: false });
@@ -25,7 +21,8 @@ export async function POST(req: Request) {
     return Response.json({ error: "Nome obrigatório" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const db = supabaseAdmin();
+  const { data, error } = await db
     .from("projetos")
     .insert({
       nome,

@@ -149,7 +149,7 @@ export default function ProjetosPage() {
                     </div>
                     <h3 className="font-semibold">{p.nome}</h3>
                     {p.descricao && <p className="mt-1 text-xs text-muted">{p.descricao}</p>}
-                    {p.tema && (
+                    {p.tema && temaCfg && (
                       <span className="mt-2 inline-block rounded px-2 py-1 text-xs font-medium" style={{ color: temaCfg.cor, background: `${temaCfg.cor}15` }}>
                         {p.tema.toUpperCase()}
                       </span>
