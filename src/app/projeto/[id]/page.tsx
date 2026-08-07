@@ -21,7 +21,7 @@ export default function ProjetoPage() {
   const [projeto, setProjeto] = useState<Projeto | null>(null);
   const [filmes, setFilmes] = useState<Filme[]>([]);
   const [carregando, setCarregando] = useState(true);
-  const [aba, setAba] = useState<"assistidos" | "para_assistir">("assistidos");
+  const [aba, setAba] = useState<"assistido" | "para_assistir">("assistido");
   const [modalAberto, setModalAberto] = useState(false);
   const [filmeEditando, setFilmeEditando] = useState<Filme | null>(null);
   const [deletando, setDeletando] = useState<string | null>(null);
@@ -170,7 +170,7 @@ export default function ProjetoPage() {
         <div className="mb-8 flex items-center justify-between gap-4">
           {/* Abas estilizadas */}
           <div className="flex gap-3 border-b border-border/50">
-          {(["assistidos", "para_assistir"] as const).map((tab) => (
+          {(["assistido", "para_assistir"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setAba(tab)}
@@ -189,7 +189,7 @@ export default function ProjetoPage() {
                   : {}
               }
             >
-              {tab === "assistidos" ? "👁️ Assistidos" : "📋 Para Assistir"}
+              {tab === "assistido" ? "👁️ Assistidos" : "📋 Para Assistir"}
             </button>
           ))}
           </div>
@@ -349,7 +349,7 @@ export default function ProjetoPage() {
         aberto={!!filmeMarcarAssistido}
         onFechar={() => setFilmeMarcarAssistido(null)}
         onSalvar={carregar}
-        onAssistido={() => setAba("assistidos")}
+        onAssistido={() => setAba("assistido")}
       />
       </main>
     </AppShell>
