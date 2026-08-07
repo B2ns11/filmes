@@ -47,6 +47,9 @@ export async function POST(req: NextRequest) {
         indicado_por: body.indicado_por || null,
         nota_brunno: body.nota_brunno ?? null,
         nota_paloma: body.nota_paloma ?? null,
+        projeto_id: body.projeto_id || null,
+        sinopse: body.sinopse || null,
+        ano: body.ano || null,
       })
       .select()
       .single();
