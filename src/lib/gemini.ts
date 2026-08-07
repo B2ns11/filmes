@@ -61,6 +61,70 @@ Responda APENAS com um JSON válido, no formato exato abaixo, sem nenhum texto a
 ]`;
 }
 
+export interface DadosFilmeIA {
+  genero: string;
+  ano: number | null;
+  sinopse: string;
+  fase?: string;
+}
+
+export async function preencherDadosFilme(titulo: string): Promise<DadosFilmeIA> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "GEMINI_API_KEY não configurada. Adicione a chave gratuita do Google AI Studio nas variáveis de ambiente."
+    );
+  }
+
+  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: modelName,
+    generationConfig: {
+      responseMimeType: "application/json",
+    },
+  });
+
+  const prompt = `Você é um especialista em filmes e séries. Pesquise o filme/série "${titulo}" e retorne informações precisas em JSON.
+
+Se o título for ambíguo, escolha a versão mais popular/recente.
+Se não encontrar o filme, retorne valores padrão (vazio para strings, null para numbers).
+
+Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
+{
+  "genero": "string (gêneros separados por vírgula, ex: Ação, Ficção Científica)",
+  "ano": "number (ano de lançamento) ou null",
+  "sinopse": "string (descrição breve do filme em português, 2-3 frases)",
+  "fase": "string (se for franquia tipo MCU: Fase 1, Fase 2, etc. ou vazio se não aplicável)"
+}`;
+
+  const result = await model.generateContent(prompt);
+  const text = result.response.text();
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) {
+      return { genero: "", ano: null, sinopse: "" };
+    }
+    parsed = JSON.parse(match[0]);
+  }
+
+  if (typeof parsed !== "object" || parsed === null) {
+    return { genero: "", ano: null, sinopse: "" };
+  }
+
+  const data = parsed as Record<string, unknown>;
+  return {
+    genero: typeof data.genero === "string" ? data.genero : "",
+    ano: typeof data.ano === "number" ? data.ano : null,
+    sinopse: typeof data.sinopse === "string" ? data.sinopse : "",
+    fase: typeof data.fase === "string" && data.fase ? data.fase : undefined,
+  };
+}
+
 export async function gerarSugestoes(
   assistidos: Filme[],
   jaNaLista: string[],

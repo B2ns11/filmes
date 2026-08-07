@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
+import AdicionarFilmeProjetoModal from "@/components/AdicionarFilmeProjetoModal";
 import type { Projeto, Filme } from "@/lib/types";
 import { media } from "@/lib/types";
 
@@ -20,6 +21,7 @@ export default function ProjetoPage() {
   const [filmes, setFilmes] = useState<Filme[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [aba, setAba] = useState<"assistidos" | "para_assistir">("assistidos");
+  const [modalAberto, setModalAberto] = useState(false);
 
   const temaCfg = projeto?.tema ? TEMAS[projeto.tema] : null;
 
@@ -135,8 +137,10 @@ export default function ProjetoPage() {
 
       {/* Conteúdo */}
       <div className="px-4 py-8">
-        {/* Abas estilizadas */}
-        <div className="mb-8 flex gap-3 border-b border-border/50">
+        {/* Cabeçalho com Abas e Botão */}
+        <div className="mb-8 flex items-center justify-between gap-4">
+          {/* Abas estilizadas */}
+          <div className="flex gap-3 border-b border-border/50">
           {(["assistidos", "para_assistir"] as const).map((tab) => (
             <button
               key={tab}
@@ -159,6 +163,18 @@ export default function ProjetoPage() {
               {tab === "assistidos" ? "👁️ Assistidos" : "📋 Para Assistir"}
             </button>
           ))}
+          </div>
+
+          {/* Botão Adicionar Filme */}
+          {aba === "para_assistir" && (
+            <button
+              onClick={() => setModalAberto(true)}
+              className="shrink-0 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95"
+              style={{ background: "var(--accent)" }}
+            >
+              + Adicionar
+            </button>
+          )}
         </div>
 
         {/* Lista de filmes */}
@@ -216,6 +232,16 @@ export default function ProjetoPage() {
           </div>
         )}
       </div>
+
+      {/* Modal Adicionar Filme */}
+      {typeof id === "string" && (
+        <AdicionarFilmeProjetoModal
+          projetoId={id}
+          aberto={modalAberto}
+          onFechar={() => setModalAberto(false)}
+          onAdicionado={carregar}
+        />
+      )}
       </main>
     </AppShell>
   );
