@@ -4,11 +4,15 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 export async function GET(req: NextRequest) {
   try {
     const status = req.nextUrl.searchParams.get("status");
+    const projetoId = req.nextUrl.searchParams.get("projetoId");
     const db = supabaseAdmin();
 
     let query = db.from("filmes").select("*").order("criado_em", { ascending: false });
     if (status) {
       query = query.eq("status", status);
+    }
+    if (projetoId) {
+      query = query.eq("projeto_id", projetoId);
     }
 
     const { data, error } = await query;
@@ -43,6 +47,11 @@ export async function POST(req: NextRequest) {
         indicado_por: body.indicado_por || null,
         nota_brunno: body.nota_brunno ?? null,
         nota_paloma: body.nota_paloma ?? null,
+        projeto_id: body.projeto_id || null,
+        banner_url: body.banner_url || null,
+        sinopse: body.sinopse || null,
+        ano: body.ano || null,
+        fase: body.fase || null,
       })
       .select()
       .single();
