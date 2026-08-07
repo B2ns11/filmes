@@ -211,68 +211,95 @@ export default function ProjetoPage() {
             <p className="text-sm text-muted">Nenhum filme nesta seção</p>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-4">
             {filmesDaAba.map((f) => (
               <div
                 key={f.id}
-                className="group rounded-xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm hover:border-border hover:shadow-lg transition-all"
+                className="flex gap-4 rounded-xl border border-border/50 bg-card/50 overflow-hidden hover:border-border hover:shadow-lg transition-all backdrop-blur-sm"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-bold text-base line-clamp-2 flex-1 group-hover:text-[var(--accent)] transition-colors">
-                    {f.titulo}
-                  </h3>
-                </div>
-
-                <div className="space-y-2 text-xs text-muted mb-4">
-                  {f.genero && <p>🎭 {f.genero}</p>}
-                  {f.ano && <p>📅 {f.ano}</p>}
-                  {f.plataforma && <p>📺 {f.plataforma}</p>}
-                </div>
-
-                {/* Notas */}
-                {(f.nota_brunno !== null || f.nota_paloma !== null) ? (
-                  <div className="space-y-2 border-t border-border/30 pt-3">
-                    {f.nota_brunno !== null && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted">Brunno</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-sm font-bold">{f.nota_brunno.toFixed(1)}</span>
-                          <span className="text-xs">⭐</span>
-                        </div>
-                      </div>
-                    )}
-                    {f.nota_paloma !== null && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted">Paloma</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-sm font-bold">{f.nota_paloma.toFixed(1)}</span>
-                          <span className="text-xs">⭐</span>
-                        </div>
-                      </div>
-                    )}
+                {/* Banner do lado esquerdo */}
+                {f.banner_url ? (
+                  <div className="shrink-0 w-24 h-32 rounded-l-xl overflow-hidden">
+                    <img
+                      src={f.banner_url}
+                      alt={f.titulo}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 ) : (
-                  <div className="text-xs text-muted italic text-center py-3">Sem avaliações</div>
-                )}
-
-                {/* Botões de Editar e Deletar - só aparece em "Para Assistir" */}
-                {aba === "para_assistir" && (
-                  <div className="mt-4 flex gap-2 border-t border-border/30 pt-3">
-                    <button
-                      onClick={() => abrirEdicao(f)}
-                      className="flex-1 rounded-lg px-2 py-2 text-xs font-medium transition-colors hover:bg-[var(--accent)]/20 hover:text-[var(--accent)]"
-                    >
-                      ✏️ Editar
-                    </button>
-                    <button
-                      onClick={() => deletarFilme(f.id)}
-                      disabled={deletando === f.id}
-                      className="flex-1 rounded-lg px-2 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-500/20 disabled:opacity-50"
-                    >
-                      {deletando === f.id ? "Deletando..." : "🗑️ Deletar"}
-                    </button>
+                  <div className="shrink-0 w-24 h-32 bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 rounded-l-xl flex items-center justify-center text-2xl">
+                    🎬
                   </div>
                 )}
+
+                {/* Conteúdo do lado direito */}
+                <div className="flex-1 p-4 flex flex-col">
+                  <h3 className="font-bold text-base line-clamp-2 hover:text-[var(--accent)] transition-colors">
+                    {f.titulo}
+                  </h3>
+
+                  {f.sinopse && (
+                    <p className="text-xs text-muted mt-1 line-clamp-2">{f.sinopse}</p>
+                  )}
+
+                  <div className="space-y-1 text-xs text-muted mt-2 mb-auto">
+                    {f.genero && <p>🎭 {f.genero}</p>}
+                    {f.ano && <p>📅 {f.ano}</p>}
+                    {f.plataforma && <p>📺 {f.plataforma}</p>}
+                  </div>
+
+                  {/* Notas */}
+                  {(f.nota_brunno !== null || f.nota_paloma !== null) && (
+                    <div className="space-y-1 text-xs text-muted mt-2">
+                      {f.nota_brunno !== null && (
+                        <div className="flex items-center gap-1">
+                          <span>Brunno:</span>
+                          <span className="font-bold">{f.nota_brunno.toFixed(1)}</span>
+                          <span>⭐</span>
+                        </div>
+                      )}
+                      {f.nota_paloma !== null && (
+                        <div className="flex items-center gap-1">
+                          <span>Paloma:</span>
+                          <span className="font-bold">{f.nota_paloma.toFixed(1)}</span>
+                          <span>⭐</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Botões */}
+                  <div className="flex gap-2 mt-3">
+                    {f.link_streaming && (
+                      <a
+                        href={f.link_streaming}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 rounded-lg px-3 py-2 text-xs font-semibold text-white text-center transition-all hover:scale-105 active:scale-95"
+                        style={{ background: "var(--accent)" }}
+                      >
+                        ▶️ Reproduzir
+                      </a>
+                    )}
+                    {aba === "para_assistir" && (
+                      <>
+                        <button
+                          onClick={() => abrirEdicao(f)}
+                          className="px-3 py-2 text-xs font-medium rounded-lg transition-colors hover:bg-[var(--accent)]/20 hover:text-[var(--accent)]"
+                        >
+                          ✏️ Editar
+                        </button>
+                        <button
+                          onClick={() => deletarFilme(f.id)}
+                          disabled={deletando === f.id}
+                          className="px-3 py-2 text-xs font-medium text-red-500 rounded-lg transition-colors hover:bg-red-500/20 disabled:opacity-50"
+                        >
+                          {deletando === f.id ? "..." : "🗑️"}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
