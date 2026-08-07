@@ -274,7 +274,10 @@ export default function ProjetoPage() {
                   <div className="flex flex-wrap gap-2 mt-3">
                     {aba === "para_assistir" && (
                       <button
-                        onClick={() => setFilmeMarcarAssistido(f)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setFilmeMarcarAssistido(f);
+                        }}
                         className="flex-1 min-w-fit rounded-lg px-3 py-2 text-xs font-semibold text-white transition-all hover:scale-105 active:scale-95"
                         style={{ background: "var(--accent)" }}
                       >
@@ -286,6 +289,7 @@ export default function ProjetoPage() {
                         href={f.link_streaming}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
                         className="flex-1 min-w-fit rounded-lg px-3 py-2 text-xs font-semibold text-white text-center transition-all hover:scale-105 active:scale-95"
                         style={{ background: "var(--accent)" }}
                       >
@@ -295,13 +299,19 @@ export default function ProjetoPage() {
                     {aba === "para_assistir" && (
                       <>
                         <button
-                          onClick={() => abrirEdicao(f)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            abrirEdicao(f);
+                          }}
                           className="px-3 py-2 text-xs font-medium rounded-lg transition-colors hover:bg-[var(--accent)]/20 hover:text-[var(--accent)]"
                         >
                           ✏️ Editar
                         </button>
                         <button
-                          onClick={() => deletarFilme(f.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deletarFilme(f.id);
+                          }}
                           disabled={deletando === f.id}
                           className="px-3 py-2 text-xs font-medium text-red-500 rounded-lg transition-colors hover:bg-red-500/20 disabled:opacity-50"
                         >
