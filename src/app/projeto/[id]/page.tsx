@@ -349,6 +349,7 @@ export default function ProjetoPage() {
         aberto={!!filmeMarcarAssistido}
         onFechar={() => setFilmeMarcarAssistido(null)}
         onSalvar={carregar}
+        onAssistido={() => setAba("assistidos")}
       />
       </main>
     </AppShell>

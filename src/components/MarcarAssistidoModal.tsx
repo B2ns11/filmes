@@ -8,6 +8,7 @@ interface MarcarAssistidoModalProps {
   aberto: boolean;
   onFechar: () => void;
   onSalvar: () => void;
+  onAssistido?: () => void;
 }
 
 export default function MarcarAssistidoModal({
@@ -15,6 +16,7 @@ export default function MarcarAssistidoModal({
   aberto,
   onFechar,
   onSalvar,
+  onAssistido,
 }: MarcarAssistidoModalProps) {
   const [notaBrunno, setNotaBrunno] = useState(filme?.nota_brunno?.toString() || "");
   const [notaPaloma, setNotaPaloma] = useState(filme?.nota_paloma?.toString() || "");
@@ -51,6 +53,7 @@ export default function MarcarAssistidoModal({
       if (!res.ok) throw new Error("Erro ao salvar");
 
       await onSalvar();
+      onAssistido?.();
       onFechar();
     } catch (e) {
       alert("Erro ao marcar como assistido");
