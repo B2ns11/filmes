@@ -48,6 +48,16 @@ export const api = {
       body: JSON.stringify(payload),
     }).then((r) => tratar<{ perfil: Perfil }>(r)),
 
+  obterPerfil: () =>
+    fetch("/api/perfil").then((r) => tratar<{ perfil: Perfil }>(r)),
+
+  atualizarPerfil: (payload: Partial<Perfil>) =>
+    fetch("/api/perfil", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).then((r) => tratar<{ perfil: Perfil }>(r)),
+
   gerarSugestoes: () =>
     fetch("/api/suggest", { method: "POST" }).then((r) => tratar<{ sugestoes: Filme[] }>(r)),
 };

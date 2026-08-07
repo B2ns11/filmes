@@ -7,6 +7,8 @@ export interface SugestaoIA {
   categoria: string;
   genero: string;
   motivo: string;
+  plataforma?: string;
+  link_streaming?: string;
 }
 
 function buildPrompt(
@@ -51,9 +53,11 @@ ${evitar}
 
 Sugira de 3 a 5 filmes, séries ou minisséries REAIS (que existem de verdade) que o casal provavelmente vai gostar, com um motivo curto (1 a 2 frases, em português, citando de forma natural a relação com as notas ou preferências deles) explicando o porquê da sugestão.
 
+Para cada sugestão, tente identificar em qual plataforma o título está disponível (Netflix, Prime Video, Disney+, HBO Max, Globoplay, etc.) e, se souber, inclua um link para assistir. Se não souber ao certo, deixe os campos vazios.
+
 Responda APENAS com um JSON válido, no formato exato abaixo, sem nenhum texto antes ou depois:
 [
-  { "titulo": "string", "categoria": "Filme | Série | Minissérie | Documentário", "genero": "string", "motivo": "string" }
+  { "titulo": "string", "categoria": "Filme | Série | Minissérie | Documentário", "genero": "string", "motivo": "string", "plataforma": "string (ex: Netflix, Prime Video, etc) ou vazio", "link_streaming": "string (URL completa) ou vazio" }
 ]`;
 }
 
@@ -109,5 +113,7 @@ export async function gerarSugestoes(
       categoria: item.categoria || "Filme",
       genero: item.genero || "",
       motivo: item.motivo || "",
+      plataforma: item.plataforma?.trim() || undefined,
+      link_streaming: item.link_streaming?.trim() || undefined,
     }));
 }

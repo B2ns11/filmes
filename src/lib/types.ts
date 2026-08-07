@@ -19,6 +19,7 @@ export interface Filme {
   categoria: string;
   genero: string;
   plataforma: string;
+  link_streaming?: string;
   status: StatusFilme;
   origem: OrigemFilme;
   indicado_por: Usuario | null;
@@ -34,6 +35,13 @@ export interface Filme {
   atualizado_em: string;
 }
 
+export interface CriterioAvaliacao {
+  label: string;
+  emoji: string;
+  notaMinima: number;
+  notaMaxima?: number;
+}
+
 export interface Perfil {
   usuario: Usuario;
   nome: string;
@@ -41,6 +49,7 @@ export interface Perfil {
   generos_favoritos: string[];
   generos_evitar: string[];
   preferencias_extra: string;
+  criterios_avaliacao?: CriterioAvaliacao[];
   atualizado_em: string;
 }
 

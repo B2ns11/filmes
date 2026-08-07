@@ -16,7 +16,7 @@ const CARTOES: CartaoUsuario[] = [
   {
     usuario: "brunno",
     nome: "Brunno",
-    gradiente: "linear-gradient(150deg, #0f1522, #1b4fc4)",
+    gradiente: "linear-gradient(150deg, #0f1522, #2d8659)",
     emoji: "🎥",
   },
   {
@@ -90,10 +90,6 @@ export default function SelecionarUsuarioPage() {
           </button>
         ))}
       </div>
-
-      <p className="max-w-xs text-xs text-white/40">
-        Sem senha — é só clicar em cima do seu nome pra entrar.
-      </p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { Filme } from "@/lib/types";
 import { media } from "@/lib/types";
 import AvaliacaoBadge from "./AvaliacaoBadge";
+import BotaoAssistir from "./BotaoAssistir";
 
 export default function FilmeCard({
   filme,
@@ -47,10 +48,14 @@ export default function FilmeCard({
       {filme.origem === "ia" && filme.motivo_ia && (
         <p
           className="rounded-app px-3 py-2 text-xs leading-relaxed"
-          style={{ background: "var(--accent-soft)", color: "var(--accent-2)" }}
+          style={{ background: "var(--accent-soft)", color: "var(--ia-text-color)" }}
         >
           ✨ {filme.motivo_ia}
         </p>
+      )}
+
+      {filme.link_streaming && (
+        <BotaoAssistir linkStreaming={filme.link_streaming} tamanho="pequeno" />
       )}
 
       {rodape}
