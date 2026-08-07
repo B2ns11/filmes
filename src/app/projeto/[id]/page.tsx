@@ -97,7 +97,7 @@ export default function ProjetoPage() {
     <main className="min-h-dvh bg-surface">
       {/* Cabeçalho temático */}
       <div style={temaCfg ? { background: temaCfg.bg } : {}} className="border-b border-border">
-        <div className="mx-auto max-w-4xl px-4 py-6">
+        <div className="px-4 py-6">
           <Link href="/projetos" className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-ink">
             ← Voltar aos Projetos
           </Link>
@@ -140,7 +140,7 @@ export default function ProjetoPage() {
       </div>
 
       {/* Conteúdo */}
-      <div className="mx-auto max-w-4xl px-4 py-6">
+      <div className="px-4 py-6">
         {/* Abas */}
         <div className="mb-6 flex gap-2 border-b border-border">
           {(["assistidos", "para_assistir"] as const).map((tab) => (
