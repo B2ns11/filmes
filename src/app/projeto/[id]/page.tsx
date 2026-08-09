@@ -222,109 +222,108 @@ export default function ProjetoPage() {
                     setFilmeMarcarAssistido(f);
                   }
                 }}
-                className={`flex gap-4 rounded-xl border border-border/50 bg-card/50 overflow-hidden hover:border-border hover:shadow-lg transition-all backdrop-blur-sm ${aba === "para_assistir" ? "cursor-pointer" : ""}`}
+                className={`flex items-stretch rounded-2xl border border-border/50 bg-card/50 overflow-hidden hover:border-border hover:shadow-lg transition-all backdrop-blur-sm ${aba === "para_assistir" ? "cursor-pointer" : ""}`}
               >
-                {/* Banner do lado esquerdo */}
-                {f.banner_url ? (
-                  <div className="shrink-0 w-24 h-32 rounded-l-xl overflow-hidden">
+                {/* Pôster: define a altura do card (proporção 2:3) */}
+                <div className="relative w-24 sm:w-32 shrink-0 self-stretch min-h-[144px] sm:min-h-[192px]">
+                  {f.banner_url ? (
                     <img
                       src={f.banner_url}
                       alt={f.titulo}
-                      className="w-full h-full object-cover"
+                      className="absolute inset-0 h-full w-full object-cover"
                     />
-                  </div>
-                ) : (
-                  <div className="shrink-0 w-24 h-32 bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 rounded-l-xl flex items-center justify-center text-2xl">
-                    🎬
-                  </div>
-                )}
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 text-3xl">
+                      🎬
+                    </div>
+                  )}
+                  {f.ano && (
+                    <span className="absolute bottom-2 left-2 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                      {f.ano}
+                    </span>
+                  )}
+                </div>
 
                 {/* Conteúdo do lado direito */}
-                <div className="flex-1 p-4 flex flex-col">
-                  <h3 className="font-bold text-base line-clamp-2 hover:text-[var(--accent)] transition-colors">
+                <div className="flex min-w-0 flex-1 flex-col p-4">
+                  <h3 className="font-bold text-base sm:text-lg line-clamp-2">
                     {f.titulo}
                   </h3>
 
-                  {f.sinopse && (
-                    <p className="text-xs text-muted mt-1 line-clamp-2">{f.sinopse}</p>
-                  )}
-
-                  <div className="space-y-1 text-xs text-muted mt-2 mb-auto">
-                    {f.genero && <p>🎭 {f.genero}</p>}
-                    {f.ano && <p>📅 {f.ano}</p>}
-                    {f.plataforma && <p>📺 {f.plataforma}</p>}
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                    {f.fase && <span>🏷️ {f.fase}</span>}
+                    {f.genero && <span className="truncate">🎭 {f.genero}</span>}
+                    {f.plataforma && <span>📺 {f.plataforma}</span>}
                   </div>
+
+                  {f.sinopse && (
+                    <p className="mt-2 text-xs sm:text-sm text-muted line-clamp-2">
+                      {f.sinopse}
+                    </p>
+                  )}
 
                   {/* Notas */}
                   {(f.nota_brunno !== null || f.nota_paloma !== null) && (
-                    <div className="space-y-1 text-xs text-muted mt-2">
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
                       {f.nota_brunno !== null && (
-                        <div className="flex items-center gap-1">
-                          <span>Brunno:</span>
-                          <span className="font-bold">{f.nota_brunno.toFixed(1)}</span>
-                          <span>⭐</span>
-                        </div>
+                        <span>
+                          Brunno <span className="font-bold text-ink">{f.nota_brunno.toFixed(1)}</span> ⭐
+                        </span>
                       )}
                       {f.nota_paloma !== null && (
-                        <div className="flex items-center gap-1">
-                          <span>Paloma:</span>
-                          <span className="font-bold">{f.nota_paloma.toFixed(1)}</span>
-                          <span>⭐</span>
-                        </div>
+                        <span>
+                          Paloma <span className="font-bold text-ink">{f.nota_paloma.toFixed(1)}</span> ⭐
+                        </span>
                       )}
                     </div>
                   )}
 
+                  {f.link_streaming && (
+                    <a
+                      href={f.link_streaming}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-2 inline-flex w-fit items-center gap-1.5 text-xs font-medium text-[var(--accent)] hover:underline"
+                    >
+                      🔗 Assistir{f.plataforma ? ` em ${f.plataforma}` : ""}
+                    </a>
+                  )}
+
                   {/* Botões */}
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {aba === "para_assistir" && (
+                  {aba === "para_assistir" && (
+                    <div className="mt-auto flex gap-2 pt-3">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setFilmeMarcarAssistido(f);
                         }}
-                        className="flex-1 min-w-fit rounded-lg px-3 py-2 text-xs font-semibold text-white transition-all hover:scale-105 active:scale-95"
+                        className="flex-1 rounded-lg px-3 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
                         style={{ background: "var(--accent)" }}
                       >
-                        ✓ Assistir
+                        ✅ Marcar Assistido
                       </button>
-                    )}
-                    {f.link_streaming && (
-                      <a
-                        href={f.link_streaming}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex-1 min-w-fit rounded-lg px-3 py-2 text-xs font-semibold text-white text-center transition-all hover:scale-105 active:scale-95"
-                        style={{ background: "var(--accent)" }}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          abrirEdicao(f);
+                        }}
+                        className="rounded-lg border border-border px-3 py-2 text-xs font-medium transition-colors hover:bg-[var(--accent)]/15 hover:text-[var(--accent)]"
                       >
-                        ▶️ Reproduzir
-                      </a>
-                    )}
-                    {aba === "para_assistir" && (
-                      <>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            abrirEdicao(f);
-                          }}
-                          className="px-3 py-2 text-xs font-medium rounded-lg transition-colors hover:bg-[var(--accent)]/20 hover:text-[var(--accent)]"
-                        >
-                          ✏️ Editar
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deletarFilme(f.id);
-                          }}
-                          disabled={deletando === f.id}
-                          className="px-3 py-2 text-xs font-medium text-red-500 rounded-lg transition-colors hover:bg-red-500/20 disabled:opacity-50"
-                        >
-                          {deletando === f.id ? "..." : "🗑️"}
-                        </button>
-                      </>
-                    )}
-                  </div>
+                        ✏️
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deletarFilme(f.id);
+                        }}
+                        disabled={deletando === f.id}
+                        className="rounded-lg border border-border px-3 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-500/15 disabled:opacity-50"
+                      >
+                        {deletando === f.id ? "..." : "🗑️ Remover"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

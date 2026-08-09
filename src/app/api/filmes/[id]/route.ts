@@ -13,6 +13,7 @@ const CAMPOS_PERMITIDOS = [
   "nota_paloma",
   "sinopse",
   "ano",
+  "fase",
   "link_streaming",
   "banner_url",
 ] as const;

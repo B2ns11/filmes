@@ -24,6 +24,7 @@ export default function AdicionarFilmeProjetoModal({
       setGenero(filmeEditando.genero || "");
       setAno(filmeEditando.ano?.toString() || "");
       setSinopse(filmeEditando.sinopse || "");
+      setFase(filmeEditando.fase || "");
       setPlataforma(filmeEditando.plataforma || "");
       setLinkStreaming(filmeEditando.link_streaming || "");
       setBannerPreview(filmeEditando.banner_url || "");
@@ -35,6 +36,7 @@ export default function AdicionarFilmeProjetoModal({
   const [genero, setGenero] = useState("");
   const [ano, setAno] = useState("");
   const [sinopse, setSinopse] = useState("");
+  const [fase, setFase] = useState("");
   const [plataforma, setPlataforma] = useState("");
   const [linkStreaming, setLinkStreaming] = useState("");
   const [bannerFile, setBannerFile] = useState<File | null>(null);
@@ -56,6 +58,7 @@ export default function AdicionarFilmeProjetoModal({
       setGenero(dados.genero);
       setAno(dados.ano?.toString() || "");
       setSinopse(dados.sinopse);
+      setFase(dados.fase || "");
       setPlataforma(dados.plataforma || "");
       setLinkStreaming(dados.link_streaming || "");
     } catch (e) {
@@ -75,6 +78,7 @@ export default function AdicionarFilmeProjetoModal({
         genero: genero.trim(),
         ano: ano ? parseInt(ano) : null,
         sinopse: sinopse.trim(),
+        fase: fase.trim() || null,
         plataforma: plataforma.trim(),
         link_streaming: linkStreaming.trim(),
         banner_url: bannerPreview,
@@ -116,6 +120,7 @@ export default function AdicionarFilmeProjetoModal({
     setGenero("");
     setAno("");
     setSinopse("");
+    setFase("");
     setPlataforma("");
     setLinkStreaming("");
     setBannerFile(null);
@@ -173,6 +178,13 @@ export default function AdicionarFilmeProjetoModal({
           onChange={(e) => setAno(e.target.value)}
           placeholder="Ano"
           type="number"
+          className="mb-3 w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-[var(--accent)] transition-colors"
+        />
+
+        <input
+          value={fase}
+          onChange={(e) => setFase(e.target.value)}
+          placeholder="Fase / saga (ex: Fase 5)"
           className="mb-3 w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-[var(--accent)] transition-colors"
         />
 
