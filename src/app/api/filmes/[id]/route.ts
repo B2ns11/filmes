@@ -14,6 +14,7 @@ const CAMPOS_PERMITIDOS = [
   "sinopse",
   "ano",
   "fase",
+  "prioridade",
   "link_streaming",
   "banner_url",
 ] as const;

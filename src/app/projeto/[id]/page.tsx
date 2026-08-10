@@ -6,8 +6,8 @@ import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import AdicionarFilmeProjetoModal from "@/components/AdicionarFilmeProjetoModal";
 import MarcarAssistidoModal from "@/components/MarcarAssistidoModal";
-import type { Projeto, Filme } from "@/lib/types";
-import { media } from "@/lib/types";
+import type { Projeto, Filme, Prioridade } from "@/lib/types";
+import { media, PRIORIDADES } from "@/lib/types";
 
 const TEMAS: Record<string, { cor: string; bg: string }> = {
   mcu: { cor: "#E23636", bg: "linear-gradient(135deg, rgba(226,54,54,0.08) 0%, rgba(226,54,54,0.02) 100%)" },
@@ -35,6 +35,7 @@ export default function ProjetoPage() {
   const [deletando, setDeletando] = useState<string | null>(null);
   const [filmeMarcarAssistido, setFilmeMarcarAssistido] = useState<Filme | null>(null);
   const [ordem, setOrdem] = useState<Ordem>("adicionado");
+  const [filtroFarol, setFiltroFarol] = useState<Prioridade | "todos">("todos");
 
   const temaCfg = projeto?.tema ? TEMAS[projeto.tema] : null;
 
@@ -102,7 +103,11 @@ export default function ProjetoPage() {
   }, [filmes]);
 
   const filmesDaAba = useMemo(() => {
-    const lista = filmes.filter((f) => f.status === aba);
+    const lista = filmes.filter(
+      (f) =>
+        f.status === aba &&
+        (filtroFarol === "todos" || f.prioridade === filtroFarol)
+    );
     if (ordem === "adicionado") return lista;
 
     const direcao = ordem === "lancamento_asc" ? 1 : -1;
@@ -115,7 +120,21 @@ export default function ProjetoPage() {
       if (b.ano === null) return -1;
       return (a.ano - b.ano) * direcao;
     });
-  }, [filmes, aba, ordem]);
+  }, [filmes, aba, ordem, filtroFarol]);
+
+  /** Quantos filmes da aba atual têm cada cor do farol. */
+  const contagemFarol = useMemo(() => {
+    const daAba = filmes.filter((f) => f.status === aba);
+    return {
+      todos: daAba.length,
+      obrigatorio: daAba.filter((f) => f.prioridade === "obrigatorio").length,
+      recomendado: daAba.filter((f) => f.prioridade === "recomendado").length,
+      pular: daAba.filter((f) => f.prioridade === "pular").length,
+    };
+  }, [filmes, aba]);
+
+  const temFarol =
+    contagemFarol.obrigatorio + contagemFarol.recomendado + contagemFarol.pular > 0;
 
   if (carregando || !projeto) {
     return (
@@ -227,8 +246,45 @@ export default function ProjetoPage() {
           )}
         </div>
 
+        {/* Farol — só aparece se algum filme da aba tiver prioridade */}
+        {temFarol && (
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium text-muted">Farol:</span>
+            <button
+              onClick={() => setFiltroFarol("todos")}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                filtroFarol === "todos"
+                  ? "text-white"
+                  : "border border-border text-muted hover:text-ink"
+              }`}
+              style={
+                filtroFarol === "todos"
+                  ? { background: temaCfg?.cor ?? "var(--accent)" }
+                  : {}
+              }
+            >
+              Todos ({contagemFarol.todos})
+            </button>
+            {(Object.keys(PRIORIDADES) as Prioridade[]).map((p) => (
+              <button
+                key={p}
+                onClick={() => setFiltroFarol(p)}
+                disabled={contagemFarol[p] === 0}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-40 ${
+                  filtroFarol === p
+                    ? "text-white"
+                    : "border border-border text-muted hover:text-ink"
+                }`}
+                style={filtroFarol === p ? { background: PRIORIDADES[p].cor } : {}}
+              >
+                {PRIORIDADES[p].emoji} {PRIORIDADES[p].label} ({contagemFarol[p]})
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Ordenação — vale para as duas abas */}
-        {filmesDaAba.length > 0 && (
+        {(filmesDaAba.length > 0 || filtroFarol !== "todos") && (
           <div className="mb-6 flex flex-wrap items-center gap-2">
             <span className="text-xs font-medium text-muted">Ordenar por:</span>
             {ORDENS.map(({ valor, label }) => (
@@ -256,7 +312,22 @@ export default function ProjetoPage() {
         {filmesDaAba.length === 0 ? (
           <div className="rounded-xl border-2 border-dashed border-border/50 p-12 text-center">
             <p className="text-2xl mb-2">🎬</p>
-            <p className="text-sm text-muted">Nenhum filme nesta seção</p>
+            {filtroFarol === "todos" ? (
+              <p className="text-sm text-muted">Nenhum filme nesta seção</p>
+            ) : (
+              <>
+                <p className="text-sm text-muted">
+                  Nenhum filme {PRIORIDADES[filtroFarol].emoji}{" "}
+                  {PRIORIDADES[filtroFarol].label.toLowerCase()} nesta seção
+                </p>
+                <button
+                  onClick={() => setFiltroFarol("todos")}
+                  className="mt-3 text-xs font-medium text-[var(--accent)] hover:underline"
+                >
+                  Limpar filtro
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
@@ -306,6 +377,19 @@ export default function ProjetoPage() {
                   <h3 className="font-bold text-base sm:text-lg line-clamp-2">
                     {f.titulo}
                   </h3>
+
+                  {f.prioridade && (
+                    <span
+                      className="mt-1.5 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold"
+                      style={{
+                        background: `${PRIORIDADES[f.prioridade].cor}22`,
+                        color: PRIORIDADES[f.prioridade].cor,
+                      }}
+                    >
+                      {PRIORIDADES[f.prioridade].emoji}{" "}
+                      {PRIORIDADES[f.prioridade].label}
+                    </span>
+                  )}
 
                   <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
                     {f.fase && <span>🏷️ {f.fase}</span>}

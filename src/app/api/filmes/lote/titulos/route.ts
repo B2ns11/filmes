@@ -19,8 +19,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Envie o print da lista." }, { status: 400 });
     }
 
-    const titulos = await extrairTitulosDaImagem(imagem);
-    if (titulos.length === 0) {
+    const encontrados = await extrairTitulosDaImagem(imagem);
+    if (encontrados.length === 0) {
       return NextResponse.json(
         {
           error:
@@ -41,8 +41,12 @@ export async function POST(req: NextRequest) {
     );
 
     return NextResponse.json({
-      titulos: titulos.filter((t) => !jaTem.has(t.toLowerCase())),
-      repetidos: titulos.filter((t) => jaTem.has(t.toLowerCase())),
+      // Cada item leva { titulo, prioridade } — a prioridade vem da bolinha
+      // colorida do print e segue junto até a inserção.
+      filmes: encontrados.filter((f) => !jaTem.has(f.titulo.toLowerCase())),
+      repetidos: encontrados
+        .filter((f) => jaTem.has(f.titulo.toLowerCase()))
+        .map((f) => f.titulo),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erro inesperado.";
