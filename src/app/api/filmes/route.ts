@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
         sinopse: body.sinopse || null,
         ano: body.ano || null,
         fase: body.fase || null,
+        prioridade: body.prioridade || null,
         link_streaming: body.link_streaming || null,
         banner_url: body.banner_url || null,
       })

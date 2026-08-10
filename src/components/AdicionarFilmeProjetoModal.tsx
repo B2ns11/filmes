@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Filme } from "@/lib/types";
+import type { Filme, Prioridade } from "@/lib/types";
+import { PRIORIDADES } from "@/lib/types";
+
+interface FilmeDoPrint {
+  titulo: string;
+  prioridade: Prioridade | null;
+}
 
 /** Precisa bater com MAX_POR_BLOCO em /api/filmes/lote. */
 const TAMANHO_BLOCO = 5;
@@ -28,6 +34,7 @@ export default function AdicionarFilmeProjetoModal({
       setAno(filmeEditando.ano?.toString() || "");
       setSinopse(filmeEditando.sinopse || "");
       setFase(filmeEditando.fase || "");
+      setPrioridade(filmeEditando.prioridade || "");
       setPlataforma(filmeEditando.plataforma || "");
       setLinkStreaming(filmeEditando.link_streaming || "");
       setBannerPreview(filmeEditando.banner_url || "");
@@ -40,6 +47,7 @@ export default function AdicionarFilmeProjetoModal({
   const [ano, setAno] = useState("");
   const [sinopse, setSinopse] = useState("");
   const [fase, setFase] = useState("");
+  const [prioridade, setPrioridade] = useState<Prioridade | "">("");
   const [plataforma, setPlataforma] = useState("");
   const [linkStreaming, setLinkStreaming] = useState("");
   const [bannerFile, setBannerFile] = useState<File | null>(null);
@@ -89,6 +97,7 @@ export default function AdicionarFilmeProjetoModal({
         ano: ano ? parseInt(ano) : null,
         sinopse: sinopse.trim(),
         fase: fase.trim() || null,
+        prioridade: prioridade || null,
         plataforma: plataforma.trim(),
         link_streaming: linkStreaming.trim(),
         banner_url: bannerPreview,
@@ -131,6 +140,7 @@ export default function AdicionarFilmeProjetoModal({
     setAno("");
     setSinopse("");
     setFase("");
+    setPrioridade("");
     setPlataforma("");
     setLinkStreaming("");
     setBannerFile(null);
@@ -165,10 +175,14 @@ export default function AdicionarFilmeProjetoModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imagem: printLote, projetoId }),
       });
-      const { titulos, repetidos, error } = await resTitulos.json();
+      const { filmes, repetidos, error } = (await resTitulos.json()) as {
+        filmes: FilmeDoPrint[];
+        repetidos?: string[];
+        error?: string;
+      };
       if (!resTitulos.ok) throw new Error(error || "Erro ao ler o print");
 
-      if (titulos.length === 0) {
+      if (filmes.length === 0) {
         setProgressoLote(null);
         setResumoLote(
           repetidos?.length
@@ -178,11 +192,13 @@ export default function AdicionarFilmeProjetoModal({
         return;
       }
 
-      // 2) Os títulos vão em blocos pequenos — cada bloco é uma chamada só à
+      const comFarol = filmes.filter((f) => f.prioridade).length;
+
+      // 2) Os filmes vão em blocos pequenos — cada bloco é uma chamada só à
       //    IA, o que evita estourar o limite por minuto no meio do lote.
-      const blocos: string[][] = [];
-      for (let i = 0; i < titulos.length; i += TAMANHO_BLOCO) {
-        blocos.push(titulos.slice(i, i + TAMANHO_BLOCO));
+      const blocos: FilmeDoPrint[][] = [];
+      for (let i = 0; i < filmes.length; i += TAMANHO_BLOCO) {
+        blocos.push(filmes.slice(i, i + TAMANHO_BLOCO));
       }
 
       let adicionados = 0;
@@ -192,7 +208,7 @@ export default function AdicionarFilmeProjetoModal({
 
       for (const [i, bloco] of blocos.entries()) {
         setProgressoLote(
-          `Adicionando ${adicionados + bloco.length} de ${titulos.length} (bloco ${
+          `Adicionando ${adicionados + bloco.length} de ${filmes.length} (bloco ${
             i + 1
           }/${blocos.length})...`
         );
@@ -201,7 +217,7 @@ export default function AdicionarFilmeProjetoModal({
           const res = await fetch("/api/filmes/lote", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ titulos: bloco, projetoId }),
+            body: JSON.stringify({ filmes: bloco, projetoId }),
           });
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || "Erro no bloco");
@@ -213,11 +229,12 @@ export default function AdicionarFilmeProjetoModal({
         } catch (e) {
           // Um bloco que falha não derruba os outros.
           console.error(`Falha no bloco ${i + 1}:`, e);
-          blocosComErro.push(...bloco);
+          blocosComErro.push(...bloco.map((f) => f.titulo));
         }
       }
 
       const partes = [`${adicionados} filme(s) adicionado(s)`];
+      if (comFarol) partes.push(`${comFarol} com farol reconhecido`);
       if (repetidos?.length) partes.push(`${repetidos.length} já estava(m) no projeto`);
       if (semDados) partes.push(`${semDados} sem os dados da IA`);
       if (semPoster) partes.push(`${semPoster} sem pôster`);
@@ -295,6 +312,40 @@ export default function AdicionarFilmeProjetoModal({
           placeholder="Fase / saga (ex: Fase 5)"
           className="mb-3 w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-[var(--accent)] transition-colors"
         />
+
+        <div className="mb-3">
+          <label className="mb-2 block text-xs font-semibold text-muted">
+            Farol de importância
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setPrioridade("")}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                prioridade === ""
+                  ? "bg-[var(--accent)] text-white"
+                  : "border border-border text-muted hover:text-ink"
+              }`}
+            >
+              Sem farol
+            </button>
+            {(Object.keys(PRIORIDADES) as Prioridade[]).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPrioridade(p)}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  prioridade === p
+                    ? "text-white"
+                    : "border border-border text-muted hover:text-ink"
+                }`}
+                style={prioridade === p ? { background: PRIORIDADES[p].cor } : {}}
+              >
+                {PRIORIDADES[p].emoji} {PRIORIDADES[p].label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <input
           value={plataforma}

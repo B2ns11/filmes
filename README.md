@@ -41,6 +41,10 @@ nosso-cinema/
 4. Ainda em Settings → **API Keys**: copie a chave **service_role** (não é a
    `anon`/`public` — é a `service_role`, que fica só no backend e nunca é
    exposta ao navegador). Isso é o `SUPABASE_SERVICE_ROLE_KEY`.
+5. Rode também os arquivos de `supabase/migrations/` no SQL Editor, na ordem
+   alfabética. São os campos que foram adicionados depois do schema inicial
+   (sistema de projetos, farol de prioridade). Todos usam `if not exists`,
+   então rodar de novo não quebra nada.
 
 ## 3. Pegar a chave gratuita do Gemini
 

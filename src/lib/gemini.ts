@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { Filme, Perfil } from "./types";
+import type { Filme, Perfil, Prioridade } from "./types";
 import { media } from "./types";
 
 export interface SugestaoIA {
@@ -268,11 +268,40 @@ Responda APENAS com JSON válido:
   }
 }
 
+export interface FilmeDoPrint {
+  titulo: string;
+  prioridade: Prioridade | null;
+}
+
+function ehPrioridade(v: unknown): v is Prioridade {
+  return v === "obrigatorio" || v === "recomendado" || v === "pular";
+}
+
 /**
- * Lê um print/foto e devolve os títulos de filmes e séries que aparecem nele.
+ * Reforço para o que o modelo não limpar sozinho: numeração da lista no começo
+ * ("30. "), bolinha colorida solta, e o ano entre parênteses no fim. Título sujo
+ * atrapalha tanto a busca do pôster no TMDB quanto o preenchimento pela IA.
+ */
+function limparTitulo(bruto: string): string {
+  return bruto
+    .trim()
+    // Bolinhas/quadrados coloridos que tenham vindo junto.
+    .replace(/^[\u{1F534}-\u{1F7EB}\u{25A0}-\u{25FF}\u{2B00}-\u{2BFF}]+\s*/u, "")
+    // "30. ", "30) ", "30 - " — exige separador para não comer "12 Homens...".
+    .replace(/^\d{1,3}\s*[.)\-–—]\s*/, "")
+    // "(2016)" no fim.
+    .replace(/\s*\((?:19|20)\d{2}\)\s*$/, "")
+    .trim();
+}
+
+/**
+ * Lê um print/foto e devolve os filmes que aparecem nele, com a prioridade do
+ * farol quando o item tem bolinha colorida antes do título.
  * A imagem vem como Data URL (data:image/png;base64,...) do input de arquivo.
  */
-export async function extrairTitulosDaImagem(imagemDataUrl: string): Promise<string[]> {
+export async function extrairTitulosDaImagem(
+  imagemDataUrl: string
+): Promise<FilmeDoPrint[]> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error(
@@ -299,16 +328,28 @@ export async function extrairTitulosDaImagem(imagemDataUrl: string): Promise<str
 
 Identifique TODOS os filmes e séries que aparecem na imagem.
 
-Regras:
+Regras para o TÍTULO:
 - Devolva o título oficial em português do Brasil quando existir; senão, o título original.
+- REMOVA a numeração da lista do começo do título. "30. Guardiões da Galáxia Vol. 3" vira "Guardiões da Galáxia Vol. 3".
+- REMOVA o ano entre parênteses do fim do título. "X-Men: Apocalipse (2016)" vira "X-Men: Apocalipse".
 - Se reconhecer um cartaz/capa pela arte, use o título da obra mesmo que o texto esteja cortado ou ilegível.
 - Não invente títulos que não estão na imagem.
 - Não repita o mesmo título duas vezes.
-- Ignore textos que não sejam títulos (datas, nomes de plataformas, categorias, números de fase, legendas).
+- Ignore textos que não sejam títulos (datas soltas, nomes de plataformas, categorias, números de fase, legendas).
+
+Regras para a PRIORIDADE (sistema de farol):
+Alguns itens têm uma bolinha colorida ANTES do título. Traduza a cor assim:
+- bolinha VERMELHA 🔴 → "obrigatorio"
+- bolinha AMARELA ou LARANJA 🟡 → "recomendado"
+- bolinha VERDE 🟢 → "pular"
+Se o item não tiver bolinha colorida, ou se a cor não for nenhuma dessas, use null.
+Olhe a cor com atenção item por item — a prioridade varia entre os itens da mesma lista.
 
 Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
 {
-  "titulos": ["Título 1", "Título 2"]
+  "filmes": [
+    { "titulo": "string", "prioridade": "obrigatorio" | "recomendado" | "pular" | null }
+  ]
 }`;
 
   const result = await comRetry(() =>
@@ -320,19 +361,29 @@ Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
 
   const parsed = extrairJSON(result.response.text(), "objeto");
   if (typeof parsed !== "object" || parsed === null) return [];
-  const { titulos } = parsed as { titulos?: unknown };
-  if (!Array.isArray(titulos)) return [];
+  const { filmes } = parsed as { filmes?: unknown };
+  if (!Array.isArray(filmes)) return [];
 
   const vistos = new Set<string>();
-  return titulos
-    .filter((t): t is string => typeof t === "string" && t.trim().length > 0)
-    .map((t) => t.trim())
-    .filter((t) => {
-      const chave = t.toLowerCase();
-      if (vistos.has(chave)) return false;
-      vistos.add(chave);
-      return true;
+  const saida: FilmeDoPrint[] = [];
+
+  for (const item of filmes) {
+    if (typeof item !== "object" || item === null) continue;
+    const { titulo, prioridade } = item as Record<string, unknown>;
+    if (typeof titulo !== "string" || !titulo.trim()) continue;
+
+    const limpo = limparTitulo(titulo);
+    const chave = limpo.toLowerCase();
+    if (!limpo || vistos.has(chave)) continue;
+    vistos.add(chave);
+
+    saida.push({
+      titulo: limpo,
+      prioridade: ehPrioridade(prioridade) ? prioridade : null,
     });
+  }
+
+  return saida;
 }
 
 export async function preencherDadosFilme(titulo: string): Promise<DadosFilmeIA> {

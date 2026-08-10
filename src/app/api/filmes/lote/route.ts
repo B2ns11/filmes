@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { preencherDadosVariosFilmes } from "@/lib/gemini";
 import { buscarPosters } from "@/lib/tmdb";
+import type { Prioridade } from "@/lib/types";
+
+function ehPrioridade(v: unknown): v is Prioridade {
+  return v === "obrigatorio" || v === "recomendado" || v === "pular";
+}
 
 export const maxDuration = 60;
 
@@ -18,21 +23,30 @@ export const MAX_POR_BLOCO = 5;
  */
 export async function POST(req: NextRequest) {
   try {
-    const { titulos, projetoId } = await req.json();
+    const { filmes, projetoId } = await req.json();
 
-    if (!Array.isArray(titulos) || titulos.length === 0) {
-      return NextResponse.json({ error: "Nenhum título recebido." }, { status: 400 });
+    if (!Array.isArray(filmes) || filmes.length === 0) {
+      return NextResponse.json({ error: "Nenhum filme recebido." }, { status: 400 });
     }
-    if (titulos.length > MAX_POR_BLOCO) {
+    if (filmes.length > MAX_POR_BLOCO) {
       return NextResponse.json(
-        { error: `Envie no máximo ${MAX_POR_BLOCO} títulos por vez.` },
+        { error: `Envie no máximo ${MAX_POR_BLOCO} filmes por vez.` },
         { status: 400 }
       );
     }
 
-    const limpos = titulos
-      .filter((t: unknown): t is string => typeof t === "string" && t.trim().length > 0)
-      .map((t: string) => t.trim());
+    const limpos = filmes
+      .filter(
+        (f: unknown): f is { titulo: string; prioridade?: unknown } =>
+          typeof f === "object" &&
+          f !== null &&
+          typeof (f as { titulo?: unknown }).titulo === "string" &&
+          (f as { titulo: string }).titulo.trim().length > 0
+      )
+      .map((f) => ({
+        titulo: f.titulo.trim(),
+        prioridade: ehPrioridade(f.prioridade) ? f.prioridade : null,
+      }));
 
     if (limpos.length === 0) {
       return NextResponse.json({ error: "Nenhum título válido." }, { status: 400 });
@@ -42,7 +56,7 @@ export async function POST(req: NextRequest) {
     // em vez de sumirem do lote.
     let dados: Awaited<ReturnType<typeof preencherDadosVariosFilmes>>;
     try {
-      dados = await preencherDadosVariosFilmes(limpos);
+      dados = await preencherDadosVariosFilmes(limpos.map((f) => f.titulo));
     } catch (e) {
       console.error("Falha ao preencher bloco:", e);
       dados = limpos.map(() => null);
@@ -50,11 +64,11 @@ export async function POST(req: NextRequest) {
 
     // Pôsteres vêm do TMDB (não da IA) e podem ser buscados todos em paralelo.
     const posters = await buscarPosters(
-      limpos.map((titulo, i) => ({ titulo, ano: dados[i]?.ano ?? null }))
+      limpos.map((f, i) => ({ titulo: f.titulo, ano: dados[i]?.ano ?? null }))
     );
 
-    const linhas = limpos.map((titulo, i) => ({
-      titulo,
+    const linhas = limpos.map((f, i) => ({
+      titulo: f.titulo,
       categoria: "Filme",
       genero: dados[i]?.genero || "",
       plataforma: dados[i]?.plataforma || "",
@@ -66,6 +80,7 @@ export async function POST(req: NextRequest) {
       fase: dados[i]?.fase || null,
       link_streaming: dados[i]?.link_streaming || null,
       banner_url: posters[i],
+      prioridade: f.prioridade,
     }));
 
     const { data, error } = await supabaseAdmin().from("filmes").insert(linhas).select();
@@ -76,8 +91,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       filmes: data,
-      semDados: limpos.filter((_, i) => !dados[i]),
-      semPoster: limpos.filter((_, i) => !posters[i]),
+      semDados: limpos.filter((_, i) => !dados[i]).map((f) => f.titulo),
+      semPoster: limpos.filter((_, i) => !posters[i]).map((f) => f.titulo),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erro inesperado.";

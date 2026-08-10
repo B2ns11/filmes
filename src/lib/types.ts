@@ -4,6 +4,18 @@ export type StatusFilme = "assistido" | "para_assistir" | "sugestao_ia";
 export type OrigemFilme = "usuario" | "ia" | "planilha";
 export type TemaProjeto = "mcu" | "hp" | "sw" | "lotr" | null;
 
+/** Farol de importância do filme dentro de um projeto. */
+export type Prioridade = "obrigatorio" | "recomendado" | "pular";
+
+export const PRIORIDADES: Record<
+  Prioridade,
+  { label: string; emoji: string; cor: string }
+> = {
+  obrigatorio: { label: "Obrigatório", emoji: "🔴", cor: "#ef4444" },
+  recomendado: { label: "Recomendado", emoji: "🟡", cor: "#eab308" },
+  pular: { label: "Pode pular", emoji: "🟢", cor: "#22c55e" },
+};
+
 export interface Projeto {
   id: string;
   nome: string;
@@ -31,6 +43,7 @@ export interface Filme {
   sinopse: string | null;
   ano: number | null;
   fase: string | null;
+  prioridade: Prioridade | null;
   criado_em: string;
   atualizado_em: string;
 }
