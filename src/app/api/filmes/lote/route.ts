@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { preencherDadosVariosFilmes } from "@/lib/gemini";
+import { buscarPosters } from "@/lib/tmdb";
 
 export const maxDuration = 60;
 
@@ -47,6 +48,11 @@ export async function POST(req: NextRequest) {
       dados = limpos.map(() => null);
     }
 
+    // Pôsteres vêm do TMDB (não da IA) e podem ser buscados todos em paralelo.
+    const posters = await buscarPosters(
+      limpos.map((titulo, i) => ({ titulo, ano: dados[i]?.ano ?? null }))
+    );
+
     const linhas = limpos.map((titulo, i) => ({
       titulo,
       categoria: "Filme",
@@ -59,6 +65,7 @@ export async function POST(req: NextRequest) {
       ano: dados[i]?.ano ?? null,
       fase: dados[i]?.fase || null,
       link_streaming: dados[i]?.link_streaming || null,
+      banner_url: posters[i],
     }));
 
     const { data, error } = await supabaseAdmin().from("filmes").insert(linhas).select();
@@ -70,6 +77,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       filmes: data,
       semDados: limpos.filter((_, i) => !dados[i]),
+      semPoster: limpos.filter((_, i) => !posters[i]),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erro inesperado.";

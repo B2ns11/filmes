@@ -50,18 +50,31 @@ nosso-cinema/
 3. O plano gratuito do Gemini tem um limite generoso de requisições por dia —
    mais do que suficiente para gerar sugestões esporadicamente.
 
-## 4. Rodar localmente (opcional, pra testar antes de subir)
+## 4. Pegar a chave gratuita do TMDB (opcional — pôster automático)
+
+Com essa chave o app busca sozinho o pôster oficial de cada filme, no lugar de
+você subir a imagem na mão. Sem ela o app funciona igual, só não preenche o
+pôster.
+
+1. Crie uma conta em [themoviedb.org](https://www.themoviedb.org/signup).
+2. Vá em **Configurações → API** e peça uma chave (uso pessoal, aprovação na
+   hora).
+3. Copie a **API Key (v3 auth)**. Isso é o `TMDB_API_KEY`. Se copiar o
+   **API Read Access Token (v4)** também funciona.
+
+## 5. Rodar localmente (opcional, pra testar antes de subir)
 
 ```bash
 cp .env.example .env.local
-# edite .env.local e cole os 3 valores: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY
+# edite .env.local e cole os valores: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
+# GEMINI_API_KEY e (opcional) TMDB_API_KEY
 
 npm install
 npm run seed   # importa os dados da planilha pro banco (rodar só uma vez)
 npm run dev    # abre em http://localhost:3000
 ```
 
-## 5. Subir pro GitHub
+## 6. Subir pro GitHub
 
 ```bash
 git init
@@ -75,13 +88,13 @@ git push -u origin main
 O `.gitignore` já impede que `.env.local` (com suas chaves) suba pro GitHub —
 o repositório pode ficar público sem expor nada sensível.
 
-## 6. Deploy no Vercel
+## 7. Deploy no Vercel
 
 1. Em [vercel.com](https://vercel.com), clique em **Add New → Project** e
    importe o repositório do GitHub.
-2. Em **Environment Variables**, adicione as 3 variáveis (mesmos nomes do
+2. Em **Environment Variables**, adicione as variáveis (mesmos nomes do
    `.env.example`): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
-   `GEMINI_API_KEY`.
+   `GEMINI_API_KEY` e, se quiser pôster automático, `TMDB_API_KEY`.
 3. Clique em **Deploy**. Pronto — o app fica no ar com as chaves guardadas só
    no Vercel, fora do código.
 4. Se ainda não rodou `npm run seed` localmente, você pode rodar depois do
