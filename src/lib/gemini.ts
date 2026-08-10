@@ -75,30 +75,120 @@ export interface DadosFilmeIA {
 
 const espera = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** Erro de cota diária esgotada — esperar não resolve, só o dia seguinte. */
+export class CotaDiariaEsgotada extends Error {
+  constructor(mensagem: string) {
+    super(mensagem);
+    this.name = "CotaDiariaEsgotada";
+  }
+}
+
 /**
- * O tier gratuito do Gemini limita chamadas por minuto e responde 429 quando
- * estoura. Nesse caso vale esperar e tentar de novo em vez de desistir.
+ * Aceita várias chaves separadas por vírgula em GEMINI_API_KEY.
+ *
+ * A cota gratuita do Gemini é por PROJETO do Google Cloud, não por chave — o
+ * erro 429 diz `PerDayPerProjectPerModel`. Então só adianta listar chaves de
+ * projetos diferentes; duas do mesmo projeto dividem a mesma cota.
  */
-async function comRetry<T>(fn: () => Promise<T>, tentativas = 3): Promise<T> {
+function chavesGemini(): string[] {
+  const bruto = process.env.GEMINI_API_KEY || "";
+  return [...new Set(bruto.split(",").map((c) => c.trim()).filter(Boolean))];
+}
+
+type TipoLimite = "dia" | "minuto" | null;
+
+/** O quotaId que o Google devolve no 429 diz qual cota estourou. */
+function tipoDeLimite(e: unknown): TipoLimite {
+  const msg = e instanceof Error ? e.message : String(e);
+  const ehLimite =
+    msg.includes("429") ||
+    msg.includes("RESOURCE_EXHAUSTED") ||
+    msg.toLowerCase().includes("rate limit") ||
+    msg.toLowerCase().includes("quota");
+
+  if (!ehLimite) return null;
+  return /per\s*day|PerDay|RequestsPerDay/i.test(msg) ? "dia" : "minuto";
+}
+
+/**
+ * Chaves que já bateram a cota diária, com o horário até quando ignorá-las.
+ *
+ * É memória de processo: some quando a função serverless esfria, e aí a chave é
+ * testada de novo. O custo disso é uma chamada que falha rápido, então não vale
+ * a complexidade de persistir em banco.
+ */
+const esgotadasAte = new Map<string, number>();
+const SEIS_HORAS = 6 * 60 * 60 * 1000;
+
+type Conteudo = Parameters<
+  ReturnType<GoogleGenerativeAI["getGenerativeModel"]>["generateContent"]
+>[0];
+
+/**
+ * Faz a chamada ao Gemini pedindo JSON de volta, com duas defesas:
+ *
+ * - cota por MINUTO estourada → espera e tenta de novo na mesma chave;
+ * - cota por DIA estourada → marca a chave e passa para a próxima da lista,
+ *   porque nesse caso repetir não adianta.
+ */
+async function gerarJSON(conteudo: Conteudo): Promise<string> {
+  const chaves = chavesGemini();
+  if (chaves.length === 0) {
+    throw new Error(
+      "GEMINI_API_KEY não configurada. Adicione a chave gratuita do Google AI Studio nas variáveis de ambiente."
+    );
+  }
+
+  const agora = Date.now();
+  const livres = chaves.filter((c) => (esgotadasAte.get(c) ?? 0) < agora);
+  // Se todas estão marcadas, tenta todas mesmo assim: a marcação é um palpite
+  // e a cota pode ter virado o dia.
+  const aTentar = livres.length > 0 ? livres : chaves;
+
+  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
   let ultimoErro: unknown;
 
-  for (let i = 0; i < tentativas; i++) {
-    try {
-      return await fn();
-    } catch (e) {
-      ultimoErro = e;
-      const msg = e instanceof Error ? e.message : String(e);
-      const limiteEstourado =
-        msg.includes("429") ||
-        msg.includes("RESOURCE_EXHAUSTED") ||
-        msg.toLowerCase().includes("rate limit") ||
-        msg.toLowerCase().includes("quota");
+  for (const [indice, chave] of aTentar.entries()) {
+    // Esperar só vale a pena na última chave. Enquanto sobrar outra, trocar é
+    // instantâneo e a cota por minuto dela é independente — dormir 2s aqui
+    // seria desperdício.
+    const ehUltima = indice === aTentar.length - 1;
+    const tentativas = ehUltima ? 3 : 1;
 
-      if (!limiteEstourado || i === tentativas - 1) throw e;
-      await espera(2000 * 2 ** i); // 2s, 4s
+    const model = new GoogleGenerativeAI(chave).getGenerativeModel({
+      model: modelName,
+      generationConfig: { responseMimeType: "application/json" },
+    });
+
+    for (let tentativa = 0; tentativa < tentativas; tentativa++) {
+      try {
+        const resultado = await model.generateContent(conteudo);
+        return resultado.response.text();
+      } catch (e) {
+        ultimoErro = e;
+        const limite = tipoDeLimite(e);
+
+        if (limite === "dia") {
+          esgotadasAte.set(chave, Date.now() + SEIS_HORAS);
+          break; // próxima chave
+        }
+        if (limite === "minuto" && tentativa < tentativas - 1) {
+          await espera(2000 * 2 ** tentativa); // 2s, 4s
+          continue;
+        }
+        if (limite === "minuto") break; // próxima chave
+        throw e; // não é cota: trocar de chave não resolveria
+      }
     }
   }
 
+  if (tipoDeLimite(ultimoErro) === "dia") {
+    throw new CotaDiariaEsgotada(
+      chaves.length > 1
+        ? `As ${chaves.length} chaves do Gemini bateram a cota diária. Tente amanhã ou adicione outra chave (de um projeto diferente do Google Cloud) em GEMINI_API_KEY.`
+        : "A cota diária gratuita do Gemini acabou. Tente amanhã, troque o GEMINI_MODEL por um de cota maior, ou adicione uma segunda chave separada por vírgula em GEMINI_API_KEY."
+    );
+  }
   throw ultimoErro;
 }
 
@@ -137,20 +227,7 @@ const normalizar = (t: string) =>
 export async function preencherDadosVariosFilmes(
   titulos: string[]
 ): Promise<(DadosFilmeIA | null)[]> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "GEMINI_API_KEY não configurada. Adicione a chave gratuita do Google AI Studio nas variáveis de ambiente."
-    );
-  }
   if (titulos.length === 0) return [];
-
-  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    generationConfig: { responseMimeType: "application/json" },
-  });
 
   const lista = titulos.map((t, i) => `${i + 1}. ${t}`).join("\n");
 
@@ -188,8 +265,7 @@ Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
   }
 ]`;
 
-  const result = await comRetry(() => model.generateContent(prompt));
-  const parsed = extrairJSON(result.response.text(), "lista");
+  const parsed = extrairJSON(await gerarJSON(prompt), "lista");
 
   if (!Array.isArray(parsed)) return titulos.map(() => null);
 
@@ -235,18 +311,6 @@ async function buscarLinkBrasil(
 ): Promise<string | undefined> {
   if (!plataforma) return undefined;
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return undefined;
-
-  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    generationConfig: {
-      responseMimeType: "application/json",
-    },
-  });
-
   const prompt = `Procure o link EXATO e FUNCIONAL para assistir "${titulo}" na plataforma "${plataforma}" NO BRASIL.
 
 Tente encontrar:
@@ -262,11 +326,12 @@ Responda APENAS com JSON válido:
 }`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const parsed = JSON.parse(text);
-    return parsed.link && typeof parsed.link === "string" ? parsed.link : undefined;
+    const parsed = extrairJSON(await gerarJSON(prompt), "objeto") as {
+      link?: unknown;
+    } | null;
+    return typeof parsed?.link === "string" && parsed.link ? parsed.link : undefined;
   } catch {
+    // Busca de reforço: se falhar, o filme fica sem link e segue a vida.
     return undefined;
   }
 }
@@ -305,27 +370,11 @@ function limparTitulo(bruto: string): string {
 export async function extrairTitulosDaImagem(
   imagemDataUrl: string
 ): Promise<FilmeDoPrint[]> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "GEMINI_API_KEY não configurada. Adicione a chave gratuita do Google AI Studio nas variáveis de ambiente."
-    );
-  }
-
   const match = imagemDataUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
   if (!match) {
     throw new Error("Imagem inválida. Envie um print em PNG, JPG ou WEBP.");
   }
   const [, mimeType, base64] = match;
-
-  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    generationConfig: {
-      responseMimeType: "application/json",
-    },
-  });
 
   const prompt = `Esta imagem é um print com uma lista de filmes e/ou séries (pode ser uma lista de texto, cartazes, capas, prints de app de streaming, cronogramas, etc).
 
@@ -355,14 +404,12 @@ Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
   ]
 }`;
 
-  const result = await comRetry(() =>
-    model.generateContent([
-      { inlineData: { mimeType, data: base64 } },
-      { text: prompt },
-    ])
-  );
+  const texto = await gerarJSON([
+    { inlineData: { mimeType, data: base64 } },
+    { text: prompt },
+  ]);
 
-  const parsed = extrairJSON(result.response.text(), "objeto");
+  const parsed = extrairJSON(texto, "objeto");
   if (typeof parsed !== "object" || parsed === null) return [];
   const { filmes } = parsed as { filmes?: unknown };
   if (!Array.isArray(filmes)) return [];
@@ -390,22 +437,6 @@ Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
 }
 
 export async function preencherDadosFilme(titulo: string): Promise<DadosFilmeIA> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "GEMINI_API_KEY não configurada. Adicione a chave gratuita do Google AI Studio nas variáveis de ambiente."
-    );
-  }
-
-  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    generationConfig: {
-      responseMimeType: "application/json",
-    },
-  });
-
   const prompt = `Você é um especialista em filmes e séries. Pesquise o filme/série "${titulo}" e retorne informações precisas em JSON.
 
 Se o título for ambíguo, escolha a versão mais popular/recente.
@@ -432,19 +463,7 @@ Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
   "link_streaming": "string (URL completa do link direto para assistir NO BRASIL) ou vazio"
 }`;
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) {
-      return { genero: "", ano: null, sinopse: "" };
-    }
-    parsed = JSON.parse(match[0]);
-  }
+  const parsed = extrairJSON(await gerarJSON(prompt), "objeto");
 
   if (typeof parsed !== "object" || parsed === null) {
     return { genero: "", ano: null, sinopse: "" };
@@ -474,36 +493,8 @@ export async function gerarSugestoes(
   jaNaLista: string[],
   perfis: Perfil[]
 ): Promise<SugestaoIA[]> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "GEMINI_API_KEY não configurada. Adicione a chave gratuita do Google AI Studio nas variáveis de ambiente."
-    );
-  }
-
-  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    generationConfig: {
-      responseMimeType: "application/json",
-    },
-  });
-
   const prompt = buildPrompt(assistidos, jaNaLista, perfis);
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    const match = text.match(/\[[\s\S]*\]/);
-    if (!match) {
-      throw new Error("A IA não retornou um JSON válido. Tente novamente.");
-    }
-    parsed = JSON.parse(match[0]);
-  }
+  const parsed = extrairJSON(await gerarJSON(prompt), "lista");
 
   if (!Array.isArray(parsed)) {
     throw new Error("Formato inesperado na resposta da IA.");

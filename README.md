@@ -51,8 +51,29 @@ nosso-cinema/
 1. Acesse [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
    e faça login com uma conta Google.
 2. Clique em **Create API key** e copie o valor. Isso é o `GEMINI_API_KEY`.
-3. O plano gratuito do Gemini tem um limite generoso de requisições por dia —
-   mais do que suficiente para gerar sugestões esporadicamente.
+
+### Cota diária e mais de uma chave
+
+A cota gratuita é **por dia, por projeto e por modelo**, e o número muda muito
+de um modelo para outro — tem modelo com 20 requisições/dia e modelo com
+centenas. Confira o seu em [ai.dev/rate-limit](https://ai.dev/rate-limit) antes
+de escolher o `GEMINI_MODEL`.
+
+Isso importa porque a importação em lote gasta várias requisições de uma vez:
+uma para ler o print, mais uma a cada 5 filmes. Um print de 45 filmes são 10
+requisições.
+
+Se a cota apertar, dá para configurar **várias chaves separadas por vírgula**:
+
+```
+GEMINI_API_KEY=chave1,chave2
+```
+
+Quando uma bate o limite do dia, o app passa para a próxima sozinho. **As
+chaves precisam ser de projetos diferentes do Google Cloud** (na hora de criar
+a chave no AI Studio dá para escolher outro projeto) — a cota é por projeto,
+então duas chaves do mesmo projeto dividem o mesmo limite e o rodízio não
+resolve nada.
 
 ## 4. Pegar a chave gratuita do TMDB (opcional — pôster automático)
 
