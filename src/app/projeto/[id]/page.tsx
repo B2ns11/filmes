@@ -189,7 +189,7 @@ export default function ProjetoPage() {
                   : {}
               }
             >
-              {tab === "assistido" ? "👁️ Assistidos" : "📋 Para Assistir"}
+              {tab === "assistido" ? "👁️ Assistidos" : "📋 Assistir"}
             </button>
           ))}
           </div>

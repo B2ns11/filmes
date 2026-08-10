@@ -43,6 +43,10 @@ export default function AdicionarFilmeProjetoModal({
   const [bannerPreview, setBannerPreview] = useState("");
   const [preenchendo, setPreenchendo] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  const [printLote, setPrintLote] = useState("");
+  const [processandoLote, setProcessandoLote] = useState(false);
+  const [resumoLote, setResumoLote] = useState<string | null>(null);
+  const [erroLote, setErroLote] = useState<string | null>(null);
 
   async function preencherComIA() {
     if (!titulo.trim()) return;
@@ -125,6 +129,51 @@ export default function AdicionarFilmeProjetoModal({
     setLinkStreaming("");
     setBannerFile(null);
     setBannerPreview("");
+    setPrintLote("");
+    setResumoLote(null);
+    setErroLote(null);
+  }
+
+  function handlePrintLoteChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setResumoLote(null);
+    setErroLote(null);
+    const reader = new FileReader();
+    reader.onload = (evt) => setPrintLote(evt.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  async function adicionarEmLote() {
+    if (!printLote) return;
+    setProcessandoLote(true);
+    setResumoLote(null);
+    setErroLote(null);
+    try {
+      const res = await fetch("/api/filmes/lote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imagem: printLote, projetoId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao processar o print");
+
+      const partes = [`${data.filmes.length} filme(s) adicionado(s)`];
+      if (data.ignorados?.length) {
+        partes.push(`${data.ignorados.length} já estava(m) no projeto`);
+      }
+      if (data.falhas?.length) {
+        partes.push(`${data.falhas.length} entrou(entraram) sem os dados da IA`);
+      }
+      setResumoLote(`${partes.join(" · ")}.`);
+      setPrintLote("");
+      onAdicionado();
+    } catch (e) {
+      setErroLote(e instanceof Error ? e.message : "Erro ao adicionar em lote");
+      console.error(e);
+    } finally {
+      setProcessandoLote(false);
+    }
   }
 
   function handleBannerChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -226,6 +275,54 @@ export default function AdicionarFilmeProjetoModal({
             className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-[var(--accent)] transition-colors"
           />
         </div>
+
+        {!filmeEditando && (
+          <div className="mb-4 rounded-xl border border-dashed border-border p-4">
+            <p className="text-sm font-semibold">📸 Adicionar em lote</p>
+            <p className="mt-1 text-xs text-muted">
+              Manda um print com a lista de filmes que a IA identifica todos e adiciona
+              já preenchidos, um por um.
+            </p>
+
+            {printLote && (
+              <img
+                src={printLote}
+                alt="Print da lista"
+                className="mt-3 max-h-40 w-full rounded-lg object-contain"
+              />
+            )}
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePrintLoteChange}
+              disabled={processandoLote}
+              className="mt-3 w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-[var(--accent)] transition-colors disabled:opacity-50"
+            />
+
+            <button
+              onClick={adicionarEmLote}
+              disabled={!printLote || processandoLote}
+              className="mt-3 w-full rounded-xl bg-[var(--accent)]/20 px-4 py-2.5 text-sm font-semibold text-[var(--accent)] transition-all hover:bg-[var(--accent)]/30 disabled:opacity-50"
+            >
+              {processandoLote
+                ? "Lendo o print e buscando os dados..."
+                : "🤖 Adicionar filmes do print"}
+            </button>
+
+            {processandoLote && (
+              <p className="mt-2 text-xs text-muted">
+                Isso pode levar alguns segundos — a IA preenche cada filme separadamente.
+              </p>
+            )}
+            {resumoLote && (
+              <p className="mt-2 text-xs font-medium" style={{ color: "var(--accent)" }}>
+                ✓ {resumoLote}
+              </p>
+            )}
+            {erroLote && <p className="mt-2 text-xs text-red-500">{erroLote}</p>}
+          </div>
+        )}
 
         <div className="flex gap-3">
           <button

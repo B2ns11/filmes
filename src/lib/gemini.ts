@@ -112,6 +112,80 @@ Responda APENAS com JSON válido:
   }
 }
 
+/**
+ * Lê um print/foto e devolve os títulos de filmes e séries que aparecem nele.
+ * A imagem vem como Data URL (data:image/png;base64,...) do input de arquivo.
+ */
+export async function extrairTitulosDaImagem(imagemDataUrl: string): Promise<string[]> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "GEMINI_API_KEY não configurada. Adicione a chave gratuita do Google AI Studio nas variáveis de ambiente."
+    );
+  }
+
+  const match = imagemDataUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+  if (!match) {
+    throw new Error("Imagem inválida. Envie um print em PNG, JPG ou WEBP.");
+  }
+  const [, mimeType, base64] = match;
+
+  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: modelName,
+    generationConfig: {
+      responseMimeType: "application/json",
+    },
+  });
+
+  const prompt = `Esta imagem é um print com uma lista de filmes e/ou séries (pode ser uma lista de texto, cartazes, capas, prints de app de streaming, cronogramas, etc).
+
+Identifique TODOS os filmes e séries que aparecem na imagem.
+
+Regras:
+- Devolva o título oficial em português do Brasil quando existir; senão, o título original.
+- Se reconhecer um cartaz/capa pela arte, use o título da obra mesmo que o texto esteja cortado ou ilegível.
+- Não invente títulos que não estão na imagem.
+- Não repita o mesmo título duas vezes.
+- Ignore textos que não sejam títulos (datas, nomes de plataformas, categorias, números de fase, legendas).
+
+Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
+{
+  "titulos": ["Título 1", "Título 2"]
+}`;
+
+  const result = await model.generateContent([
+    { inlineData: { mimeType, data: base64 } },
+    { text: prompt },
+  ]);
+  const text = result.response.text();
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    const bloco = text.match(/\{[\s\S]*\}/);
+    if (!bloco) return [];
+    parsed = JSON.parse(bloco[0]);
+  }
+
+  if (typeof parsed !== "object" || parsed === null) return [];
+  const { titulos } = parsed as { titulos?: unknown };
+  if (!Array.isArray(titulos)) return [];
+
+  const vistos = new Set<string>();
+  return titulos
+    .filter((t): t is string => typeof t === "string" && t.trim().length > 0)
+    .map((t) => t.trim())
+    .filter((t) => {
+      const chave = t.toLowerCase();
+      if (vistos.has(chave)) return false;
+      vistos.add(chave);
+      return true;
+    });
+}
+
 export async function preencherDadosFilme(titulo: string): Promise<DadosFilmeIA> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
