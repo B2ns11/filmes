@@ -70,6 +70,162 @@ export interface DadosFilmeIA {
   link_streaming?: string;
 }
 
+const espera = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * O tier gratuito do Gemini limita chamadas por minuto e responde 429 quando
+ * estoura. Nesse caso vale esperar e tentar de novo em vez de desistir.
+ */
+async function comRetry<T>(fn: () => Promise<T>, tentativas = 3): Promise<T> {
+  let ultimoErro: unknown;
+
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      ultimoErro = e;
+      const msg = e instanceof Error ? e.message : String(e);
+      const limiteEstourado =
+        msg.includes("429") ||
+        msg.includes("RESOURCE_EXHAUSTED") ||
+        msg.toLowerCase().includes("rate limit") ||
+        msg.toLowerCase().includes("quota");
+
+      if (!limiteEstourado || i === tentativas - 1) throw e;
+      await espera(2000 * 2 ** i); // 2s, 4s
+    }
+  }
+
+  throw ultimoErro;
+}
+
+function extrairJSON(texto: string, tipo: "objeto" | "lista"): unknown {
+  try {
+    return JSON.parse(texto);
+  } catch {
+    const padrao = tipo === "lista" ? /\[[\s\S]*\]/ : /\{[\s\S]*\}/;
+    const bloco = texto.match(padrao);
+    if (!bloco) return null;
+    try {
+      return JSON.parse(bloco[0]);
+    } catch {
+      return null;
+    }
+  }
+}
+
+const normalizar = (t: string) =>
+  t
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+
+/**
+ * Preenche vários filmes numa ÚNICA chamada à IA.
+ *
+ * O lote antes fazia uma (às vezes duas) chamadas por filme, o que estourava o
+ * limite por minuto no meio do processo e fazia os últimos filmes entrarem
+ * vazios. Um bloco de títulos por chamada mantém o total bem abaixo do limite.
+ *
+ * O retorno tem sempre o mesmo tamanho e ordem de `titulos`; posições que a IA
+ * não soube preencher vêm como `null`.
+ */
+export async function preencherDadosVariosFilmes(
+  titulos: string[]
+): Promise<(DadosFilmeIA | null)[]> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "GEMINI_API_KEY não configurada. Adicione a chave gratuita do Google AI Studio nas variáveis de ambiente."
+    );
+  }
+  if (titulos.length === 0) return [];
+
+  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: modelName,
+    generationConfig: { responseMimeType: "application/json" },
+  });
+
+  const lista = titulos.map((t, i) => `${i + 1}. ${t}`).join("\n");
+
+  const prompt = `Você é um especialista em filmes e séries. Para CADA título abaixo, retorne as informações pesquisadas.
+
+Títulos:
+${lista}
+
+Regras:
+- Retorne EXATAMENTE ${titulos.length} objeto(s), na MESMA ORDEM da lista acima.
+- Repita o título recebido no campo "titulo" para eu conseguir parear.
+- Se o título for ambíguo, escolha a versão mais popular/recente.
+- Se não encontrar algum, use "" para textos e null para números, mas mantenha o objeto na lista.
+
+IMPORTANTE - PLATAFORMA E LINK NO BRASIL:
+- Diga em qual serviço está disponível NO BRASIL (Netflix, Prime Video, Disney+, Max, Globoplay, etc).
+- Inclua o link direto da plataforma brasileira quando tiver certeza:
+  Disney+ https://www.disneyplus.com/pt-br/...
+  Netflix https://www.netflix.com/title/...
+  Prime Video https://www.primevideo.com/dp/...
+  Max https://www.max.com/br/...
+  Globoplay https://globoplay.globo.com/...
+- Se não tiver certeza do link exato, deixe vazio. Nunca invente URL.
+
+Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
+[
+  {
+    "titulo": "string (o título recebido)",
+    "genero": "string (gêneros separados por vírgula)",
+    "ano": number ou null,
+    "sinopse": "string (2-3 frases em português)",
+    "fase": "string (se for franquia: Fase 1, Fase 2... senão vazio)",
+    "plataforma": "string ou vazio",
+    "link_streaming": "string (URL completa) ou vazio"
+  }
+]`;
+
+  const result = await comRetry(() => model.generateContent(prompt));
+  const parsed = extrairJSON(result.response.text(), "lista");
+
+  if (!Array.isArray(parsed)) return titulos.map(() => null);
+
+  const converter = (item: Record<string, unknown>): DadosFilmeIA => ({
+    genero: typeof item.genero === "string" ? item.genero : "",
+    ano: typeof item.ano === "number" ? item.ano : null,
+    sinopse: typeof item.sinopse === "string" ? item.sinopse : "",
+    fase: typeof item.fase === "string" && item.fase ? item.fase : undefined,
+    plataforma:
+      typeof item.plataforma === "string" && item.plataforma ? item.plataforma : undefined,
+    link_streaming:
+      typeof item.link_streaming === "string" && item.link_streaming
+        ? item.link_streaming
+        : undefined,
+  });
+
+  const itens = parsed.filter(
+    (i): i is Record<string, unknown> => typeof i === "object" && i !== null
+  );
+
+  // Caminho feliz: veio na mesma ordem e quantidade que pedimos.
+  if (itens.length === titulos.length) {
+    return itens.map(converter);
+  }
+
+  // Veio torto: pareia pelo título devolvido.
+  const porTitulo = new Map<string, Record<string, unknown>>();
+  for (const item of itens) {
+    if (typeof item.titulo === "string") {
+      porTitulo.set(normalizar(item.titulo), item);
+    }
+  }
+
+  return titulos.map((t) => {
+    const item = porTitulo.get(normalizar(t));
+    return item ? converter(item) : null;
+  });
+}
+
 async function buscarLinkBrasil(
   titulo: string,
   plataforma: string | undefined
@@ -155,21 +311,14 @@ Responda APENAS com um JSON válido, sem nenhum texto antes ou depois:
   "titulos": ["Título 1", "Título 2"]
 }`;
 
-  const result = await model.generateContent([
-    { inlineData: { mimeType, data: base64 } },
-    { text: prompt },
-  ]);
-  const text = result.response.text();
+  const result = await comRetry(() =>
+    model.generateContent([
+      { inlineData: { mimeType, data: base64 } },
+      { text: prompt },
+    ])
+  );
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    const bloco = text.match(/\{[\s\S]*\}/);
-    if (!bloco) return [];
-    parsed = JSON.parse(bloco[0]);
-  }
-
+  const parsed = extrairJSON(result.response.text(), "objeto");
   if (typeof parsed !== "object" || parsed === null) return [];
   const { titulos } = parsed as { titulos?: unknown };
   if (!Array.isArray(titulos)) return [];

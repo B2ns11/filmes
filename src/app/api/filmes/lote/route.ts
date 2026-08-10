@@ -1,106 +1,67 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { extrairTitulosDaImagem, preencherDadosFilme } from "@/lib/gemini";
+import { preencherDadosVariosFilmes } from "@/lib/gemini";
 
-// A IA é chamada uma vez pra ler o print e uma vez por filme encontrado.
 export const maxDuration = 60;
 
-const LIMITE_FILMES = 20;
-const CONCORRENCIA = 4;
+/** Teto por requisição: o cliente manda o print em blocos deste tamanho. */
+export const MAX_POR_BLOCO = 5;
 
-/** Roda a tarefa em todos os itens, com no máximo `limite` chamadas simultâneas. */
-async function emParalelo<T, R>(
-  itens: T[],
-  limite: number,
-  tarefa: (item: T) => Promise<R>
-): Promise<R[]> {
-  const resultados: R[] = new Array(itens.length);
-  let proximo = 0;
-
-  async function worker() {
-    while (proximo < itens.length) {
-      const indice = proximo++;
-      resultados[indice] = await tarefa(itens[indice]);
-    }
-  }
-
-  await Promise.all(
-    Array.from({ length: Math.min(limite, itens.length) }, () => worker())
-  );
-  return resultados;
-}
-
+/**
+ * Segunda etapa do lote: recebe um bloco de títulos, preenche todos numa
+ * ÚNICA chamada à IA e insere.
+ *
+ * Uma chamada por bloco (em vez de uma ou duas por filme) é o que mantém o
+ * total abaixo do limite por minuto do Gemini — era isso que fazia os últimos
+ * filmes de um print grande entrarem sem dado nenhum.
+ */
 export async function POST(req: NextRequest) {
   try {
-    const { imagem, projetoId } = await req.json();
+    const { titulos, projetoId } = await req.json();
 
-    if (!imagem || typeof imagem !== "string") {
-      return NextResponse.json({ error: "Envie o print da lista." }, { status: 400 });
+    if (!Array.isArray(titulos) || titulos.length === 0) {
+      return NextResponse.json({ error: "Nenhum título recebido." }, { status: 400 });
     }
-
-    const titulos = await extrairTitulosDaImagem(imagem);
-    if (titulos.length === 0) {
+    if (titulos.length > MAX_POR_BLOCO) {
       return NextResponse.json(
-        { error: "A IA não encontrou nenhum filme nesse print. Tenta uma imagem mais nítida." },
-        { status: 422 }
+        { error: `Envie no máximo ${MAX_POR_BLOCO} títulos por vez.` },
+        { status: 400 }
       );
     }
 
-    const db = supabaseAdmin();
+    const limpos = titulos
+      .filter((t: unknown): t is string => typeof t === "string" && t.trim().length > 0)
+      .map((t: string) => t.trim());
 
-    // Não repetir o que já está no projeto (ou na lista geral, se não for de projeto).
-    const consultaExistentes = db.from("filmes").select("titulo");
-    const { data: existentes } = projetoId
-      ? await consultaExistentes.eq("projeto_id", projetoId)
-      : await consultaExistentes.is("projeto_id", null);
-
-    const jaTem = new Set(
-      (existentes ?? []).map((f: { titulo: string }) => f.titulo.trim().toLowerCase())
-    );
-
-    const novos = titulos
-      .filter((t) => !jaTem.has(t.toLowerCase()))
-      .slice(0, LIMITE_FILMES);
-
-    const ignorados = titulos.filter((t) => jaTem.has(t.toLowerCase()));
-
-    if (novos.length === 0) {
-      return NextResponse.json({
-        filmes: [],
-        titulosEncontrados: titulos,
-        ignorados,
-        falhas: [],
-      });
+    if (limpos.length === 0) {
+      return NextResponse.json({ error: "Nenhum título válido." }, { status: 400 });
     }
 
-    // Mesmo preenchimento da adição individual, só que para cada título do print.
-    const preenchidos = await emParalelo(novos, CONCORRENCIA, async (titulo) => {
-      try {
-        const dados = await preencherDadosFilme(titulo);
-        return { titulo, dados };
-      } catch (e) {
-        console.error(`Falha ao preencher "${titulo}":`, e);
-        return { titulo, dados: null };
-      }
-    });
+    // Se a IA falhar no bloco inteiro, os filmes ainda entram só com o título
+    // em vez de sumirem do lote.
+    let dados: Awaited<ReturnType<typeof preencherDadosVariosFilmes>>;
+    try {
+      dados = await preencherDadosVariosFilmes(limpos);
+    } catch (e) {
+      console.error("Falha ao preencher bloco:", e);
+      dados = limpos.map(() => null);
+    }
 
-    const falhas = preenchidos.filter((p) => p.dados === null).map((p) => p.titulo);
-
-    const linhas = preenchidos.map(({ titulo, dados }) => ({
+    const linhas = limpos.map((titulo, i) => ({
       titulo,
       categoria: "Filme",
-      genero: dados?.genero || "",
-      plataforma: dados?.plataforma || "",
+      genero: dados[i]?.genero || "",
+      plataforma: dados[i]?.plataforma || "",
       status: "para_assistir",
       origem: "ia",
       projeto_id: projetoId || null,
-      sinopse: dados?.sinopse || null,
-      ano: dados?.ano ?? null,
-      fase: dados?.fase || null,
-      link_streaming: dados?.link_streaming || null,
+      sinopse: dados[i]?.sinopse || null,
+      ano: dados[i]?.ano ?? null,
+      fase: dados[i]?.fase || null,
+      link_streaming: dados[i]?.link_streaming || null,
     }));
 
-    const { data, error } = await db.from("filmes").insert(linhas).select();
+    const { data, error } = await supabaseAdmin().from("filmes").insert(linhas).select();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -108,9 +69,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       filmes: data,
-      titulosEncontrados: titulos,
-      ignorados,
-      falhas,
+      semDados: limpos.filter((_, i) => !dados[i]),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erro inesperado.";
