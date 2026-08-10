@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import type { Filme } from "@/lib/types";
 
+/** Precisa bater com MAX_POR_BLOCO em /api/filmes/lote. */
+const TAMANHO_BLOCO = 5;
+
 interface AdicionarFilmeProjetoModalProps {
   projetoId: string;
   aberto: boolean;
@@ -45,6 +48,7 @@ export default function AdicionarFilmeProjetoModal({
   const [salvando, setSalvando] = useState(false);
   const [printLote, setPrintLote] = useState("");
   const [processandoLote, setProcessandoLote] = useState(false);
+  const [progressoLote, setProgressoLote] = useState<string | null>(null);
   const [resumoLote, setResumoLote] = useState<string | null>(null);
   const [erroLote, setErroLote] = useState<string | null>(null);
 
@@ -130,6 +134,7 @@ export default function AdicionarFilmeProjetoModal({
     setBannerFile(null);
     setBannerPreview("");
     setPrintLote("");
+    setProgressoLote(null);
     setResumoLote(null);
     setErroLote(null);
   }
@@ -149,26 +154,75 @@ export default function AdicionarFilmeProjetoModal({
     setProcessandoLote(true);
     setResumoLote(null);
     setErroLote(null);
+    setProgressoLote("Lendo o print...");
+
     try {
-      const res = await fetch("/api/filmes/lote", {
+      // 1) A IA lê o print e devolve os títulos que ainda não estão no projeto.
+      const resTitulos = await fetch("/api/filmes/lote/titulos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imagem: printLote, projetoId }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao processar o print");
+      const { titulos, repetidos, error } = await resTitulos.json();
+      if (!resTitulos.ok) throw new Error(error || "Erro ao ler o print");
 
-      const partes = [`${data.filmes.length} filme(s) adicionado(s)`];
-      if (data.ignorados?.length) {
-        partes.push(`${data.ignorados.length} já estava(m) no projeto`);
+      if (titulos.length === 0) {
+        setProgressoLote(null);
+        setResumoLote(
+          repetidos?.length
+            ? `Nada novo: ${repetidos.length} filme(s) do print já estão no projeto.`
+            : "Nenhum filme novo encontrado no print."
+        );
+        return;
       }
-      if (data.falhas?.length) {
-        partes.push(`${data.falhas.length} entrou(entraram) sem os dados da IA`);
+
+      // 2) Os títulos vão em blocos pequenos — cada bloco é uma chamada só à
+      //    IA, o que evita estourar o limite por minuto no meio do lote.
+      const blocos: string[][] = [];
+      for (let i = 0; i < titulos.length; i += TAMANHO_BLOCO) {
+        blocos.push(titulos.slice(i, i + TAMANHO_BLOCO));
       }
+
+      let adicionados = 0;
+      let semDados = 0;
+      const blocosComErro: string[] = [];
+
+      for (const [i, bloco] of blocos.entries()) {
+        setProgressoLote(
+          `Adicionando ${adicionados + bloco.length} de ${titulos.length} (bloco ${
+            i + 1
+          }/${blocos.length})...`
+        );
+
+        try {
+          const res = await fetch("/api/filmes/lote", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ titulos: bloco, projetoId }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Erro no bloco");
+
+          adicionados += data.filmes.length;
+          semDados += data.semDados?.length ?? 0;
+          onAdicionado();
+        } catch (e) {
+          // Um bloco que falha não derruba os outros.
+          console.error(`Falha no bloco ${i + 1}:`, e);
+          blocosComErro.push(...bloco);
+        }
+      }
+
+      const partes = [`${adicionados} filme(s) adicionado(s)`];
+      if (repetidos?.length) partes.push(`${repetidos.length} já estava(m) no projeto`);
+      if (semDados) partes.push(`${semDados} sem os dados da IA`);
+      if (blocosComErro.length) partes.push(`${blocosComErro.length} falhou(falharam)`);
+
+      setProgressoLote(null);
       setResumoLote(`${partes.join(" · ")}.`);
       setPrintLote("");
-      onAdicionado();
     } catch (e) {
+      setProgressoLote(null);
       setErroLote(e instanceof Error ? e.message : "Erro ao adicionar em lote");
       console.error(e);
     } finally {
@@ -281,7 +335,7 @@ export default function AdicionarFilmeProjetoModal({
             <p className="text-sm font-semibold">📸 Adicionar em lote</p>
             <p className="mt-1 text-xs text-muted">
               Manda um print com a lista de filmes que a IA identifica todos e adiciona
-              já preenchidos, um por um.
+              já preenchidos, em blocos de {TAMANHO_BLOCO}.
             </p>
 
             {printLote && (
@@ -305,14 +359,13 @@ export default function AdicionarFilmeProjetoModal({
               disabled={!printLote || processandoLote}
               className="mt-3 w-full rounded-xl bg-[var(--accent)]/20 px-4 py-2.5 text-sm font-semibold text-[var(--accent)] transition-all hover:bg-[var(--accent)]/30 disabled:opacity-50"
             >
-              {processandoLote
-                ? "Lendo o print e buscando os dados..."
-                : "🤖 Adicionar filmes do print"}
+              {processandoLote ? "Processando..." : "🤖 Adicionar filmes do print"}
             </button>
 
-            {processandoLote && (
-              <p className="mt-2 text-xs text-muted">
-                Isso pode levar alguns segundos — a IA preenche cada filme separadamente.
+            {progressoLote && (
+              <p className="mt-2 flex items-center gap-2 text-xs text-muted">
+                <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-border border-t-[var(--accent)]" />
+                {progressoLote}
               </p>
             )}
             {resumoLote && (
