@@ -6,6 +6,7 @@ import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import AdicionarFilmeProjetoModal from "@/components/AdicionarFilmeProjetoModal";
 import MarcarAssistidoModal from "@/components/MarcarAssistidoModal";
+import PosterFilme from "@/components/PosterFilme";
 import type { Projeto, Filme, Prioridade } from "@/lib/types";
 import { media, PRIORIDADES } from "@/lib/types";
 
@@ -341,36 +342,7 @@ export default function ProjetoPage() {
                 }}
                 className={`flex items-stretch rounded-2xl border border-border/50 bg-card/50 overflow-hidden hover:border-border hover:shadow-lg transition-all backdrop-blur-sm ${aba === "para_assistir" ? "cursor-pointer" : ""}`}
               >
-                {/* Pôster. A altura mínima segue a proporção 2:3 da largura. */}
-                <div className="relative w-28 sm:w-32 shrink-0 self-stretch min-h-[168px] sm:min-h-[192px] overflow-hidden bg-surface-alt">
-                  {f.banner_url ? (
-                    <>
-                      {/* Quando o texto deixa o card mais alto que o pôster, uma
-                          cópia borrada preenche a sobra. Com object-cover puro o
-                          pôster era esticado e cortado nas laterais no celular. */}
-                      <img
-                        src={f.banner_url}
-                        alt=""
-                        aria-hidden="true"
-                        className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-lg"
-                      />
-                      <img
-                        src={f.banner_url}
-                        alt={f.titulo}
-                        className="absolute inset-0 h-full w-full object-contain"
-                      />
-                    </>
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 text-3xl">
-                      🎬
-                    </div>
-                  )}
-                  {f.ano && (
-                    <span className="absolute bottom-2 left-2 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                      {f.ano}
-                    </span>
-                  )}
-                </div>
+                <PosterFilme url={f.banner_url} titulo={f.titulo} ano={f.ano} />
 
                 {/* Conteúdo do lado direito */}
                 <div className="flex min-w-0 flex-1 flex-col p-4">
