@@ -12,6 +12,8 @@ const BASE = "https://api.themoviedb.org/3";
 const IMAGEM = "https://image.tmdb.org/t/p/w500";
 
 interface ResultadoTMDB {
+  id?: number;
+  media_type?: string;
   poster_path: string | null;
   title?: string;
   name?: string;
@@ -82,13 +84,66 @@ function melhorResultado(
   return comPoster.reduce((a, b) => (pontuar(b) > pontuar(a) ? b : a));
 }
 
-/** URL do pôster do título, ou null se não configurado / não encontrado. */
-export async function buscarPoster(
+export interface DadosTMDB {
+  /** URL do pôster, ou null se não achou. */
+  poster: string | null;
+  /** Página "onde assistir" no Brasil. Existe quando o título está em catálogo. */
+  link: string | null;
+  /** Serviços onde está disponível no Brasil, por assinatura. */
+  plataformas: string[];
+}
+
+const VAZIO: DadosTMDB = { poster: null, link: null, plataformas: [] };
+
+interface ProvedoresBR {
+  link?: string;
+  flatrate?: { provider_name?: string }[];
+}
+
+/**
+ * Onde assistir no Brasil, direto do catálogo do TMDB/JustWatch.
+ *
+ * Isso existe porque pedir a URL para a IA não funciona bem: ela só devolve
+ * link quando lembra a URL exata, e o prompt (com razão) proíbe inventar. Aqui
+ * o link é dado real — a contrapartida é que ele leva para a página "onde
+ * assistir" e não para o deep link dentro da Max/Netflix.
+ */
+async function buscarProvedores(
+  chave: string,
+  tipo: string,
+  id: number
+): Promise<{ link: string | null; plataformas: string[] }> {
+  try {
+    const { url, init } = montarRequisicao(
+      chave,
+      `/${tipo}/${id}/watch/providers`,
+      new URLSearchParams()
+    );
+    const res = await fetch(url, init);
+    if (!res.ok) return { link: null, plataformas: [] };
+
+    const { results } = (await res.json()) as { results?: Record<string, ProvedoresBR> };
+    const br = results?.BR;
+    if (!br) return { link: null, plataformas: [] };
+
+    return {
+      link: br.link || null,
+      plataformas: (br.flatrate ?? [])
+        .map((p) => p.provider_name)
+        .filter((n): n is string => typeof n === "string" && n.length > 0),
+    };
+  } catch {
+    return { link: null, plataformas: [] };
+  }
+}
+
+/** Pôster, link de "onde assistir" e plataformas do título no Brasil. */
+export async function buscarDadosTMDB(
   titulo: string,
   ano?: number | null
-): Promise<string | null> {
+): Promise<DadosTMDB> {
   const chave = process.env.TMDB_API_KEY;
-  if (!chave || !titulo.trim()) return null;
+  if (!chave || !titulo.trim()) return VAZIO;
 
   try {
     const params = new URLSearchParams({
@@ -101,26 +156,42 @@ export async function buscarPoster(
     const res = await fetch(url, init);
     if (!res.ok) {
       console.error(`TMDB respondeu ${res.status} para "${titulo}"`);
-      return null;
+      return VAZIO;
     }
 
     const { results } = (await res.json()) as { results?: ResultadoTMDB[] };
-    if (!Array.isArray(results) || results.length === 0) return null;
+    if (!Array.isArray(results) || results.length === 0) return VAZIO;
 
     const escolhido = melhorResultado(results, titulo, ano);
-    return escolhido?.poster_path ? `${IMAGEM}${escolhido.poster_path}` : null;
+    if (!escolhido) return VAZIO;
+
+    const poster = escolhido.poster_path ? `${IMAGEM}${escolhido.poster_path}` : null;
+
+    // watch/providers só existe para filme e série, não para pessoa.
+    const tipo = escolhido.media_type === "tv" ? "tv" : "movie";
+    if (!escolhido.id || (escolhido.media_type && escolhido.media_type === "person")) {
+      return { poster, link: null, plataformas: [] };
+    }
+
+    const { link, plataformas } = await buscarProvedores(chave, tipo, escolhido.id);
+    return { poster, link, plataformas };
   } catch (e) {
-    console.error(`Erro ao buscar pôster de "${titulo}":`, e);
-    return null;
+    console.error(`Erro ao buscar "${titulo}" no TMDB:`, e);
+    return VAZIO;
   }
 }
 
-/**
- * Busca vários pôsteres de uma vez. O TMDB aguenta bem chamadas em paralelo,
- * então aqui não tem o problema de limite que existe com a IA.
- */
-export function buscarPosters(
+/** Versão em lote. O TMDB aguenta bem chamadas em paralelo. */
+export function buscarVariosTMDB(
   filmes: { titulo: string; ano?: number | null }[]
-): Promise<(string | null)[]> {
-  return Promise.all(filmes.map((f) => buscarPoster(f.titulo, f.ano)));
+): Promise<DadosTMDB[]> {
+  return Promise.all(filmes.map((f) => buscarDadosTMDB(f.titulo, f.ano)));
+}
+
+/** Só o pôster. Usado pelo script de backfill (`npm run posters`). */
+export async function buscarPoster(
+  titulo: string,
+  ano?: number | null
+): Promise<string | null> {
+  return (await buscarDadosTMDB(titulo, ano)).poster;
 }

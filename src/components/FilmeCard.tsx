@@ -18,17 +18,24 @@ export default function FilmeCard({
       <PosterFilme url={filme.banner_url} titulo={filme.titulo} ano={filme.ano} />
 
       <div className="flex min-w-0 flex-1 flex-col gap-2 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <h3 className="font-semibold leading-snug">{filme.titulo}</h3>
-            <p className="text-xs text-muted">
-              {filme.categoria}
-              {filme.genero ? ` · ${filme.genero}` : ""}
-              {filme.plataforma ? ` · ${filme.plataforma}` : ""}
-            </p>
-          </div>
-          {filme.status === "assistido" && <AvaliacaoBadge media={m} />}
+        {/* Título e badge em linhas separadas: lado a lado, o badge ("Vale
+            cada segundo · 10.0") comia quase toda a largura da coluna no
+            celular e sobrava uma tira para o título, que quebrava letra a
+            letra. */}
+        <div className="min-w-0">
+          <h3 className="font-semibold leading-snug break-words">{filme.titulo}</h3>
+          <p className="text-xs text-muted break-words">
+            {filme.categoria}
+            {filme.genero ? ` · ${filme.genero}` : ""}
+            {filme.plataforma ? ` · ${filme.plataforma}` : ""}
+          </p>
         </div>
+
+        {filme.status === "assistido" && (
+          <div className="w-fit">
+            <AvaliacaoBadge media={m} />
+          </div>
+        )}
 
         {filme.prioridade && (
           <span

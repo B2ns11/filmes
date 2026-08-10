@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { preencherDadosVariosFilmes, CotaDiariaEsgotada } from "@/lib/gemini";
-import { buscarPosters } from "@/lib/tmdb";
+import { buscarVariosTMDB } from "@/lib/tmdb";
 import type { Prioridade } from "@/lib/types";
 
 function ehPrioridade(v: unknown): v is Prioridade {
@@ -69,8 +69,8 @@ export async function POST(req: NextRequest) {
       dados = limpos.map(() => null);
     }
 
-    // Pôsteres vêm do TMDB (não da IA) e podem ser buscados todos em paralelo.
-    const posters = await buscarPosters(
+    // Pôster e link vêm do TMDB (não da IA) e são buscados todos em paralelo.
+    const tmdb = await buscarVariosTMDB(
       limpos.map((f, i) => ({ titulo: f.titulo, ano: dados[i]?.ano ?? null }))
     );
 
@@ -78,15 +78,17 @@ export async function POST(req: NextRequest) {
       titulo: f.titulo,
       categoria: "Filme",
       genero: dados[i]?.genero || "",
-      plataforma: dados[i]?.plataforma || "",
+      plataforma: dados[i]?.plataforma || tmdb[i].plataformas[0] || "",
       status: "para_assistir",
       origem: "ia",
       projeto_id: projetoId || null,
       sinopse: dados[i]?.sinopse || null,
       ano: dados[i]?.ano ?? null,
       fase: dados[i]?.fase || null,
-      link_streaming: dados[i]?.link_streaming || null,
-      banner_url: posters[i],
+      // Link direto da IA quando ela tem; senão a página "onde assistir" do
+      // TMDB, que é dado real e sempre existe se o título está em catálogo.
+      link_streaming: dados[i]?.link_streaming || tmdb[i].link,
+      banner_url: tmdb[i].poster,
       prioridade: f.prioridade,
     }));
 
@@ -99,7 +101,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       filmes: data,
       semDados: limpos.filter((_, i) => !dados[i]).map((f) => f.titulo),
-      semPoster: limpos.filter((_, i) => !posters[i]).map((f) => f.titulo),
+      semPoster: limpos.filter((_, i) => !tmdb[i].poster).map((f) => f.titulo),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erro inesperado.";

@@ -87,6 +87,11 @@ pôster.
 3. Copie a **API Key (v3 auth)**. Isso é o `TMDB_API_KEY`. Se copiar o
    **API Read Access Token (v4)** também funciona.
 
+Além do pôster, essa chave também traz o link de "onde assistir" e as
+plataformas disponíveis no Brasil. Esses dados de disponibilidade vêm do
+**JustWatch** através do TMDB — se um dia o app deixar de ser só de uso pessoal,
+os termos deles pedem que essa fonte seja creditada na tela.
+
 ## 5. Rodar localmente (opcional, pra testar antes de subir)
 
 ```bash
