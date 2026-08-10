@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { preencherDadosVariosFilmes } from "@/lib/gemini";
+import { preencherDadosVariosFilmes, CotaDiariaEsgotada } from "@/lib/gemini";
 import { buscarPosters } from "@/lib/tmdb";
 import type { Prioridade } from "@/lib/types";
 
@@ -52,12 +52,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Nenhum título válido." }, { status: 400 });
     }
 
-    // Se a IA falhar no bloco inteiro, os filmes ainda entram só com o título
-    // em vez de sumirem do lote.
+    // Se a IA falhar no bloco, os filmes ainda entram só com o título em vez de
+    // sumirem do lote — MENOS quando a cota do dia acabou: aí nenhum bloco
+    // seguinte teria dados, e insistir só encheria o projeto de filme vazio.
     let dados: Awaited<ReturnType<typeof preencherDadosVariosFilmes>>;
     try {
       dados = await preencherDadosVariosFilmes(limpos.map((f) => f.titulo));
     } catch (e) {
+      if (e instanceof CotaDiariaEsgotada) {
+        return NextResponse.json(
+          { error: e.message, cotaEsgotada: true },
+          { status: 429 }
+        );
+      }
       console.error("Falha ao preencher bloco:", e);
       dados = limpos.map(() => null);
     }

@@ -204,6 +204,7 @@ export default function AdicionarFilmeProjetoModal({
       let adicionados = 0;
       let semDados = 0;
       let semPoster = 0;
+      let cotaEsgotada = false;
       const blocosComErro: string[] = [];
 
       for (const [i, bloco] of blocos.entries()) {
@@ -220,6 +221,14 @@ export default function AdicionarFilmeProjetoModal({
             body: JSON.stringify({ filmes: bloco, projetoId }),
           });
           const data = await res.json();
+
+          // Cota do dia acabou: os próximos blocos entrariam todos vazios,
+          // então para aqui e avisa o que já entrou.
+          if (data.cotaEsgotada) {
+            cotaEsgotada = true;
+            setErroLote(data.error);
+            break;
+          }
           if (!res.ok) throw new Error(data.error || "Erro no bloco");
 
           adicionados += data.filmes.length;
@@ -240,9 +249,13 @@ export default function AdicionarFilmeProjetoModal({
       if (semPoster) partes.push(`${semPoster} sem pôster`);
       if (blocosComErro.length) partes.push(`${blocosComErro.length} falhou(falharam)`);
 
+      if (cotaEsgotada) {
+        partes.push(`${filmes.length - adicionados} não entraram`);
+      }
+
       setProgressoLote(null);
       setResumoLote(`${partes.join(" · ")}.`);
-      setPrintLote("");
+      if (!cotaEsgotada) setPrintLote("");
     } catch (e) {
       setProgressoLote(null);
       setErroLote(e instanceof Error ? e.message : "Erro ao adicionar em lote");
