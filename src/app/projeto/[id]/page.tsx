@@ -16,6 +16,14 @@ const TEMAS: Record<string, { cor: string; bg: string }> = {
   lotr: { cor: "#C9A227", bg: "linear-gradient(135deg, rgba(201,162,39,0.08) 0%, rgba(201,162,39,0.02) 100%)" },
 };
 
+type Ordem = "adicionado" | "lancamento_asc" | "lancamento_desc";
+
+const ORDENS: { valor: Ordem; label: string }[] = [
+  { valor: "adicionado", label: "Adicionados" },
+  { valor: "lancamento_asc", label: "↑ Mais antigos" },
+  { valor: "lancamento_desc", label: "↓ Mais recentes" },
+];
+
 export default function ProjetoPage() {
   const { id } = useParams();
   const [projeto, setProjeto] = useState<Projeto | null>(null);
@@ -26,6 +34,7 @@ export default function ProjetoPage() {
   const [filmeEditando, setFilmeEditando] = useState<Filme | null>(null);
   const [deletando, setDeletando] = useState<string | null>(null);
   const [filmeMarcarAssistido, setFilmeMarcarAssistido] = useState<Filme | null>(null);
+  const [ordem, setOrdem] = useState<Ordem>("adicionado");
 
   const temaCfg = projeto?.tema ? TEMAS[projeto.tema] : null;
 
@@ -93,8 +102,20 @@ export default function ProjetoPage() {
   }, [filmes]);
 
   const filmesDaAba = useMemo(() => {
-    return filmes.filter((f) => f.status === aba);
-  }, [filmes, aba]);
+    const lista = filmes.filter((f) => f.status === aba);
+    if (ordem === "adicionado") return lista;
+
+    const direcao = ordem === "lancamento_asc" ? 1 : -1;
+    // Array.sort é estável, então filmes do mesmo ano mantêm a ordem em que
+    // foram adicionados em vez de embaralhar a cada render.
+    return lista.sort((a, b) => {
+      // Sem ano vai sempre pro fim, nas duas direções.
+      if (a.ano === null && b.ano === null) return 0;
+      if (a.ano === null) return 1;
+      if (b.ano === null) return -1;
+      return (a.ano - b.ano) * direcao;
+    });
+  }, [filmes, aba, ordem]);
 
   if (carregando || !projeto) {
     return (
@@ -205,6 +226,31 @@ export default function ProjetoPage() {
             </button>
           )}
         </div>
+
+        {/* Ordenação — vale para as duas abas */}
+        {filmesDaAba.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium text-muted">Ordenar por:</span>
+            {ORDENS.map(({ valor, label }) => (
+              <button
+                key={valor}
+                onClick={() => setOrdem(valor)}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                  ordem === valor
+                    ? "text-white"
+                    : "border border-border text-muted hover:text-ink"
+                }`}
+                style={
+                  ordem === valor
+                    ? { background: temaCfg?.cor ?? "var(--accent)" }
+                    : {}
+                }
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Lista de filmes */}
         {filmesDaAba.length === 0 ? (
