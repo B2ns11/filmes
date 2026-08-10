@@ -145,13 +145,19 @@ async function gerarJSON(conteudo: Conteudo): Promise<string> {
   const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash";
   let ultimoErro: unknown;
 
-  for (const chave of aTentar) {
+  for (const [indice, chave] of aTentar.entries()) {
+    // Esperar só vale a pena na última chave. Enquanto sobrar outra, trocar é
+    // instantâneo e a cota por minuto dela é independente — dormir 2s aqui
+    // seria desperdício.
+    const ehUltima = indice === aTentar.length - 1;
+    const tentativas = ehUltima ? 3 : 1;
+
     const model = new GoogleGenerativeAI(chave).getGenerativeModel({
       model: modelName,
       generationConfig: { responseMimeType: "application/json" },
     });
 
-    for (let tentativa = 0; tentativa < 3; tentativa++) {
+    for (let tentativa = 0; tentativa < tentativas; tentativa++) {
       try {
         const resultado = await model.generateContent(conteudo);
         return resultado.response.text();
@@ -163,7 +169,7 @@ async function gerarJSON(conteudo: Conteudo): Promise<string> {
           esgotadasAte.set(chave, Date.now() + SEIS_HORAS);
           break; // próxima chave
         }
-        if (limite === "minuto" && tentativa < 2) {
+        if (limite === "minuto" && tentativa < tentativas - 1) {
           await espera(2000 * 2 ** tentativa); // 2s, 4s
           continue;
         }
