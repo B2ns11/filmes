@@ -69,6 +69,8 @@ export default function AdicionarFilmeProjetoModal({
       setFase(dados.fase || "");
       setPlataforma(dados.plataforma || "");
       setLinkStreaming(dados.link_streaming || "");
+      // Pôster oficial do TMDB. Só preenche se ainda não escolheram um à mão.
+      if (dados.banner_url && !bannerFile) setBannerPreview(dados.banner_url);
     } catch (e) {
       alert("Erro ao preencher dados com IA. Verifique e preencha manualmente.");
       console.error(e);
@@ -185,6 +187,7 @@ export default function AdicionarFilmeProjetoModal({
 
       let adicionados = 0;
       let semDados = 0;
+      let semPoster = 0;
       const blocosComErro: string[] = [];
 
       for (const [i, bloco] of blocos.entries()) {
@@ -205,6 +208,7 @@ export default function AdicionarFilmeProjetoModal({
 
           adicionados += data.filmes.length;
           semDados += data.semDados?.length ?? 0;
+          semPoster += data.semPoster?.length ?? 0;
           onAdicionado();
         } catch (e) {
           // Um bloco que falha não derruba os outros.
@@ -216,6 +220,7 @@ export default function AdicionarFilmeProjetoModal({
       const partes = [`${adicionados} filme(s) adicionado(s)`];
       if (repetidos?.length) partes.push(`${repetidos.length} já estava(m) no projeto`);
       if (semDados) partes.push(`${semDados} sem os dados da IA`);
+      if (semPoster) partes.push(`${semPoster} sem pôster`);
       if (blocosComErro.length) partes.push(`${blocosComErro.length} falhou(falharam)`);
 
       setProgressoLote(null);
@@ -314,14 +319,32 @@ export default function AdicionarFilmeProjetoModal({
         />
 
         <div className="mb-4">
-          <label className="mb-2 block text-xs font-semibold text-muted">Banner/Poster (opcional)</label>
+          <label className="mb-2 block text-xs font-semibold text-muted">
+            Banner/Poster (opcional)
+          </label>
           {bannerPreview && (
-            <img
-              src={bannerPreview}
-              alt="Preview"
-              className="mb-2 max-h-32 w-full rounded-lg object-cover"
-            />
+            <div className="relative mb-2">
+              <img
+                src={bannerPreview}
+                alt="Preview"
+                className="max-h-40 w-full rounded-lg object-contain"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setBannerFile(null);
+                  setBannerPreview("");
+                }}
+                className="absolute right-2 top-2 rounded-lg bg-black/70 px-2 py-1 text-xs text-white hover:bg-black/90"
+              >
+                ✕ Remover
+              </button>
+            </div>
           )}
+          <p className="mb-2 text-xs text-muted">
+            O &quot;Preencher com IA&quot; já busca o pôster oficial. Suba um arquivo só
+            se quiser trocar.
+          </p>
           <input
             type="file"
             accept="image/*"
