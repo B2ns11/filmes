@@ -224,14 +224,25 @@ export default function ProjetoPage() {
                 }}
                 className={`flex items-stretch rounded-2xl border border-border/50 bg-card/50 overflow-hidden hover:border-border hover:shadow-lg transition-all backdrop-blur-sm ${aba === "para_assistir" ? "cursor-pointer" : ""}`}
               >
-                {/* Pôster: define a altura do card (proporção 2:3) */}
-                <div className="relative w-24 sm:w-32 shrink-0 self-stretch min-h-[144px] sm:min-h-[192px]">
+                {/* Pôster. A altura mínima segue a proporção 2:3 da largura. */}
+                <div className="relative w-28 sm:w-32 shrink-0 self-stretch min-h-[168px] sm:min-h-[192px] overflow-hidden bg-surface-alt">
                   {f.banner_url ? (
-                    <img
-                      src={f.banner_url}
-                      alt={f.titulo}
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
+                    <>
+                      {/* Quando o texto deixa o card mais alto que o pôster, uma
+                          cópia borrada preenche a sobra. Com object-cover puro o
+                          pôster era esticado e cortado nas laterais no celular. */}
+                      <img
+                        src={f.banner_url}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-lg"
+                      />
+                      <img
+                        src={f.banner_url}
+                        alt={f.titulo}
+                        className="absolute inset-0 h-full w-full object-contain"
+                      />
+                    </>
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 text-3xl">
                       🎬
@@ -298,17 +309,18 @@ export default function ProjetoPage() {
                           e.stopPropagation();
                           setFilmeMarcarAssistido(f);
                         }}
-                        className="flex-1 rounded-lg px-3 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                        className="flex-1 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
                         style={{ background: "var(--accent)" }}
                       >
-                        ✅ Marcar Assistido
+                        ✅ <span className="hidden sm:inline">Marcar </span>Assistido
                       </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           abrirEdicao(f);
                         }}
-                        className="rounded-lg border border-border px-3 py-2 text-xs font-medium transition-colors hover:bg-[var(--accent)]/15 hover:text-[var(--accent)]"
+                        aria-label="Editar filme"
+                        className="shrink-0 rounded-lg border border-border px-3 py-2 text-xs font-medium transition-colors hover:bg-[var(--accent)]/15 hover:text-[var(--accent)]"
                       >
                         ✏️
                       </button>
@@ -318,9 +330,16 @@ export default function ProjetoPage() {
                           deletarFilme(f.id);
                         }}
                         disabled={deletando === f.id}
-                        className="rounded-lg border border-border px-3 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-500/15 disabled:opacity-50"
+                        aria-label="Remover filme"
+                        className="shrink-0 whitespace-nowrap rounded-lg border border-border px-3 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-500/15 disabled:opacity-50"
                       >
-                        {deletando === f.id ? "..." : "🗑️ Remover"}
+                        {deletando === f.id ? (
+                          "..."
+                        ) : (
+                          <>
+                            🗑️<span className="hidden sm:inline"> Remover</span>
+                          </>
+                        )}
                       </button>
                     </div>
                   )}
