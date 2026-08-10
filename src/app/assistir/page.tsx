@@ -136,7 +136,7 @@ export default function AssistirPage() {
             Nenhuma sugestão pendente. Clique em &quot;Gerar sugestões&quot;.
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {sugestoes.map((f) => (
               <FilmeCard
                 key={f.id}
@@ -205,7 +205,7 @@ export default function AssistirPage() {
           </p>
         )}
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {paraAssistirFiltrados.map((f) => (
             <div
               key={f.id}

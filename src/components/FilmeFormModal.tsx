@@ -26,6 +26,7 @@ export default function FilmeFormModal({
   const [ano, setAno] = useState("");
   const [sinopse, setSinopse] = useState("");
   const [fase, setFase] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("");
   const [notaBrunno, setNotaBrunno] = useState("");
   const [notaPaloma, setNotaPaloma] = useState("");
   const [indicadoPor, setIndicadoPor] = useState<Usuario | "">("");
@@ -42,6 +43,7 @@ export default function FilmeFormModal({
     setAno("");
     setSinopse("");
     setFase("");
+    setBannerUrl("");
     setNotaBrunno("");
     setNotaPaloma("");
     setIndicadoPor("");
@@ -70,6 +72,8 @@ export default function FilmeFormModal({
       if (dados.fase) setFase(dados.fase);
       if (dados.plataforma) setPlataforma(dados.plataforma);
       if (dados.link_streaming) setLinkStreaming(dados.link_streaming);
+      // Pôster oficial do TMDB, já que agora o card da lista mostra a capa.
+      if (dados.banner_url) setBannerUrl(dados.banner_url);
     } catch (e) {
       setErro(
         e instanceof Error ? e.message : "Erro ao preencher com IA. Preenche na mão."
@@ -97,6 +101,7 @@ export default function FilmeFormModal({
         ano: ano ? Number(ano) : null,
         sinopse: sinopse.trim() || null,
         fase: fase.trim() || null,
+        banner_url: bannerUrl || null,
         status,
         origem: "usuario",
         indicado_por: status === "para_assistir" ? indicadoPor || null : null,

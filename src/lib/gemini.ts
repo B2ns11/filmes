@@ -7,6 +7,7 @@ export interface SugestaoIA {
   categoria: string;
   genero: string;
   motivo: string;
+  ano: number | null;
   plataforma?: string;
   link_streaming?: string;
 }
@@ -55,9 +56,11 @@ Sugira de 3 a 5 filmes, séries ou minisséries REAIS (que existem de verdade) q
 
 Para cada sugestão, tente identificar em qual plataforma o título está disponível (Netflix, Prime Video, Disney+, HBO Max, Globoplay, etc.) e, se souber, inclua um link para assistir. Se não souber ao certo, deixe os campos vazios.
 
+Informe também o ano de lançamento de cada sugestão — ele é usado para achar o pôster certo.
+
 Responda APENAS com um JSON válido, no formato exato abaixo, sem nenhum texto antes ou depois:
 [
-  { "titulo": "string", "categoria": "Filme | Série | Minissérie | Documentário", "genero": "string", "motivo": "string", "plataforma": "string (ex: Netflix, Prime Video, etc) ou vazio", "link_streaming": "string (URL completa) ou vazio" }
+  { "titulo": "string", "categoria": "Filme | Série | Minissérie | Documentário", "genero": "string", "motivo": "string", "ano": number ou null, "plataforma": "string (ex: Netflix, Prime Video, etc) ou vazio", "link_streaming": "string (URL completa) ou vazio" }
 ]`;
 }
 
@@ -518,6 +521,7 @@ export async function gerarSugestoes(
       categoria: item.categoria || "Filme",
       genero: item.genero || "",
       motivo: item.motivo || "",
+      ano: typeof item.ano === "number" ? item.ano : null,
       plataforma: item.plataforma?.trim() || undefined,
       link_streaming: item.link_streaming?.trim() || undefined,
     }));

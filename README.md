@@ -74,9 +74,14 @@ cp .env.example .env.local
 # GEMINI_API_KEY e (opcional) TMDB_API_KEY
 
 npm install
-npm run seed   # importa os dados da planilha pro banco (rodar só uma vez)
-npm run dev    # abre em http://localhost:3000
+npm run seed     # importa os dados da planilha pro banco (rodar só uma vez)
+npm run posters  # busca no TMDB o pôster dos filmes que ainda estão sem capa
+npm run dev      # abre em http://localhost:3000
 ```
+
+O `npm run posters` pode ser rodado quantas vezes quiser: ele só mexe em quem
+está sem `banner_url`. Vale rodar depois de importar a planilha, e sempre que
+sobrar filme com o ícone 🎬 no lugar da capa.
 
 ## 6. Subir pro GitHub
 
