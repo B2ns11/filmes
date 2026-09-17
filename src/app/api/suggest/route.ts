@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { gerarSugestoes } from "@/lib/gemini";
-import { buscarPosters } from "@/lib/tmdb";
+import { buscarVariosTMDB } from "@/lib/tmdb";
 import type { Filme, Perfil } from "@/lib/types";
 
 export const maxDuration = 60;
@@ -51,7 +51,7 @@ export async function POST() {
     // Pôster oficial do TMDB para cada sugestão. O ano vem junto da IA porque
     // ajuda a acertar o filme certo na busca. Em paralelo: o TMDB não tem o
     // limite por minuto apertado que o Gemini tem.
-    const posters = await buscarPosters(
+    const tmdb = await buscarVariosTMDB(
       sugestoes.map((s) => ({ titulo: s.titulo, ano: s.ano }))
     );
 
@@ -59,13 +59,13 @@ export async function POST() {
       titulo: s.titulo,
       categoria: s.categoria,
       genero: s.genero,
-      plataforma: s.plataforma || "",
-      link_streaming: s.link_streaming || null,
+      plataforma: s.plataforma || tmdb[i].plataformas[0] || "",
+      link_streaming: s.link_streaming || tmdb[i].link,
       status: "sugestao_ia" as const,
       origem: "ia" as const,
       motivo_ia: s.motivo,
       ano: s.ano,
-      banner_url: posters[i],
+      banner_url: tmdb[i].poster,
     }));
 
     const { data: criados, error: insertError } = await db
